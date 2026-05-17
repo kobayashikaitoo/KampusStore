@@ -1,0 +1,109 @@
+<?php
+// Navbar perlu auth functions
+if (!function_exists('isLoggedIn')) {
+    require_once __DIR__ . '/../functions/auth.php';
+}
+$navUser = currentUser();
+?>
+<nav class="ks-nav" id="ks-nav">
+  <div class="nav-inner">
+
+    <!-- Logo -->
+    <a href="/index.php" class="nav-logo">
+      <span>🏪</span>
+      <span class="nav-logo-text">KampusStore</span>
+    </a>
+
+    <!-- Search -->
+    <div class="nav-search">
+      <input type="text" id="nav-search-input" placeholder="Cari buku, laptop, kos…" autocomplete="off"/>
+      <button class="search-btn" id="nav-search-btn" aria-label="Cari">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+
+      <!-- Nav links desktop -->
+      <div class="nav-links-hide" style="display:flex;gap:4px;align-items:center">
+        <a href="/index.php" style="font-size:14px;font-weight:500;color:var(--body);text-decoration:none;padding:8px 12px;border-radius:8px;transition:background .2s,color .2s" onmouseover="this.style.background='var(--surface)';this.style.color='var(--ink)'" onmouseout="this.style.background='';this.style.color='var(--body)'">Jelajahi</a>
+      </div>
+
+      <!-- Wishlist -->
+      <div class="cart-wrap">
+        <a href="<?= isLoggedIn() ? '/wishlist.php' : '/auth/login.php?redirect=/wishlist.php' ?>" class="cart-btn" aria-label="Wishlist" style="text-decoration:none;display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:20px">
+          ♥
+        </a>
+      </div>
+
+      <!-- Sell button -->
+      <a href="<?= isLoggedIn() ? '/sell.php' : '/auth/login.php?redirect=/sell.php' ?>" class="btn-sell">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Jual</span>
+      </a>
+
+      <!-- User state -->
+      <?php if ($navUser): ?>
+        <!-- Logged in — avatar dropdown -->
+        <div style="position:relative" id="user-menu-wrap">
+          <button
+            onclick="toggleUserMenu()"
+            style="display:flex;align-items:center;gap:8px;background:var(--primary-light);border:1.5px solid rgba(37,99,235,0.2);border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;"
+            aria-label="Menu akun"
+          >
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">
+              <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
+            </div>
+            <span style="font-size:13px;font-weight:600;color:var(--primary)"><?= htmlspecialchars($navUser['username']) ?></span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <!-- Dropdown -->
+          <div id="user-dropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:white;border:1px solid var(--hairline);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.12);min-width:180px;overflow:hidden;z-index:200;">
+            <a href="/profile.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+              👤 Profil Saya
+            </a>
+            <a href="/my-listings.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+              🏷️ Barang Saya
+            </a>
+            <a href="/wishlist.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+              ♡ Wishlist
+            </a>
+            <div style="height:1px;background:var(--hairline);margin:4px 0"></div>
+            <a href="/auth/logout.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:#dc2626;font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">
+              🚪 Keluar
+            </a>
+          </div>
+        </div>
+      <?php else: ?>
+        <!-- Not logged in — always visible -->
+        <a href="/auth/login.php" class="btn-login">
+          <span>👤</span>
+          <span class="nav-links-hide" style="display:inline">Masuk</span>
+        </a>
+        <a href="/auth/register.php" class="btn-sell" style="background:transparent;color:var(--primary);border:1.5px solid var(--primary);" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background='transparent'">
+          <span class="nav-links-hide" style="display:inline">Daftar</span>
+          <span class="nav-mobile-only">+</span>
+        </a>
+      <?php endif; ?>
+
+    </div>
+  </div>
+</nav>
+
+<script>
+function toggleUserMenu() {
+  const dd = document.getElementById('user-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+// Tutup dropdown saat klik di luar
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('user-menu-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const dd = document.getElementById('user-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+</script>
