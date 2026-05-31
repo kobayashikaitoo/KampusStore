@@ -5,12 +5,15 @@ if (!function_exists('isLoggedIn')) {
 }
 $navUser = currentUser();
 ?>
+<script>
+  window.BASE_URL = '<?= BASE_URL ?>';
+</script>
 <nav class="ks-nav" id="ks-nav">
   <div class="nav-inner">
 
     <!-- Logo -->
-    <a href="/index.php" class="nav-logo">
-      <span>🏪</span>
+    <a href="index.php" class="nav-logo">
+      <i class="fas fa-store" style="font-size:18px;color:var(--primary)"></i>
       <span class="nav-logo-text">KampusStore</span>
     </a>
 
@@ -29,18 +32,18 @@ $navUser = currentUser();
 
       <!-- Nav links desktop -->
       <div class="nav-links-hide" style="display:flex;gap:4px;align-items:center">
-        <a href="/index.php" style="font-size:14px;font-weight:500;color:var(--body);text-decoration:none;padding:8px 12px;border-radius:8px;transition:background .2s,color .2s" onmouseover="this.style.background='var(--surface)';this.style.color='var(--ink)'" onmouseout="this.style.background='';this.style.color='var(--body)'">Jelajahi</a>
+        <a href="team.php" style="font-size:14px;font-weight:500;color:var(--body);text-decoration:none;padding:8px 12px;border-radius:8px;transition:background .2s,color .2s" onmouseover="this.style.background='var(--surface)';this.style.color='var(--ink)'" onmouseout="this.style.background='';this.style.color='var(--body)'">Tim</a>
       </div>
 
       <!-- Wishlist -->
       <div class="cart-wrap">
-        <a href="<?= isLoggedIn() ? '/wishlist.php' : '/auth/login.php?redirect=/wishlist.php' ?>" class="cart-btn" aria-label="Wishlist" style="text-decoration:none;display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:20px">
-          ♥
+        <a href="<?= isLoggedIn() ? 'wishlist.php' : 'auth/login.php?redirect=wishlist.php' ?>" class="cart-btn" aria-label="Wishlist" style="text-decoration:none;display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:18px">
+          <i class="fas fa-heart"></i>
         </a>
       </div>
 
       <!-- Sell button -->
-      <a href="<?= isLoggedIn() ? '/sell.php' : '/auth/login.php?redirect=/sell.php' ?>" class="btn-sell">
+      <a href="<?= isLoggedIn() ? 'sell.php' : 'auth/login.php?redirect=sell.php' ?>" class="btn-sell">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span>Jual</span>
       </a>
@@ -62,30 +65,36 @@ $navUser = currentUser();
           </button>
           <!-- Dropdown -->
           <div id="user-dropdown" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:white;border:1px solid var(--hairline);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.12);min-width:180px;overflow:hidden;z-index:200;">
-            <a href="/profile.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
-              👤 Profil Saya
+            <a href="profile.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+              <i class="fas fa-user"></i> Profil Saya
             </a>
-            <a href="/my-listings.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
-              🏷️ Barang Saya
+            <a href="my-listings.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+              <i class="fas fa-tag"></i> Barang Saya
             </a>
-            <a href="/wishlist.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
-              ♡ Wishlist
+            <a href="wishlist.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+              <i class="fas fa-heart"></i> Wishlist
             </a>
+            <?php if ($navUser && $navUser['role'] === 'admin'): ?>
+              <div style="height:1px;background:var(--hairline);margin:4px 0"></div>
+              <a href="admin/" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:#d97706;font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background=''">
+                <i class="fas fa-cog"></i> Panel Admin
+              </a>
+            <?php endif; ?>
             <div style="height:1px;background:var(--hairline);margin:4px 0"></div>
-            <a href="/auth/logout.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:#dc2626;font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">
-              🚪 Keluar
+            <a href="auth/logout.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:#dc2626;font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">
+              <i class="fas fa-door-open"></i> Keluar
             </a>
           </div>
         </div>
       <?php else: ?>
         <!-- Not logged in — always visible -->
-        <a href="/auth/login.php" class="btn-login">
-          <span>👤</span>
+        <a href="auth/login.php" class="btn-login">
+          <i class="fas fa-user"></i>
           <span class="nav-links-hide" style="display:inline">Masuk</span>
         </a>
-        <a href="/auth/register.php" class="btn-sell" style="background:transparent;color:var(--primary);border:1.5px solid var(--primary);" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background='transparent'">
+        <a href="auth/register.php" class="btn-sell" style="background:transparent;color:var(--primary);border:1.5px solid var(--primary);" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background='transparent'">
+          <i class="fas fa-user-plus"></i>
           <span class="nav-links-hide" style="display:inline">Daftar</span>
-          <span class="nav-mobile-only">+</span>
         </a>
       <?php endif; ?>
 

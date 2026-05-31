@@ -18,23 +18,23 @@ unset($_SESSION['auth_success']);
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/css/custom.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/global.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/navbar.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/home.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/products.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/footer.css"/>
 </head>
 <body>
 
   <?php require_once __DIR__ . '/components/navbar.php'; ?>
 
   <?php if ($successMsg): ?>
-    <div id="success-banner" style="
-      position:fixed;top:80px;left:50%;transform:translateX(-50%);
-      background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;
-      padding:12px 20px;font-size:14px;font-weight:500;color:#16a34a;
-      box-shadow:0 4px 16px rgba(0,0,0,0.08);z-index:500;
-      animation:fadeInUp .4s ease both;
-    ">
-      ✅ <?= htmlspecialchars($successMsg) ?>
-    </div>
-    <script>setTimeout(()=>{const b=document.getElementById('success-banner');if(b)b.style.opacity='0';},3000)</script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        showToast('<?= addslashes($successMsg) ?>', 'success', 3000);
+      });
+    </script>
   <?php endif; ?>
 
   <main>

@@ -7,6 +7,7 @@ require_once __DIR__ . '/functions/helpers.php';
 requireLogin(); // redirect ke login jika belum login
 
 $user  = currentUser();
+$uid   = $_SESSION['user_id'];
 $error = $_SESSION['sell_error'] ?? null;
 $old   = $_SESSION['sell_old']   ?? [];
 unset($_SESSION['sell_error'], $_SESSION['sell_old']);
@@ -14,6 +15,12 @@ unset($_SESSION['sell_error'], $_SESSION['sell_old']);
 // Ambil kategori dari DB
 $db   = getDB();
 $cats = $db->query('SELECT * FROM categories ORDER BY name')->fetchAll();
+
+// Check if user has WhatsApp number
+$userStmt = $db->prepare('SELECT whatsapp_number FROM users WHERE id = ?');
+$userStmt->execute([$uid]);
+$userCheck = $userStmt->fetch();
+$hasWhatsApp = !empty($userCheck['whatsapp_number']);
 
 // Proses POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,27 +39,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($title) || $price <= 0 || !$category_id || !in_array($condition, $validConditions)) {
         $_SESSION['sell_error'] = 'Judul, harga, kategori, dan kondisi wajib diisi.';
         $_SESSION['sell_old']   = $old;
-        header('Location: sell.php');
+        header('Location: ' . BASE_URL . 'sell.php');
         exit;
     }
 
-    // Handle upload gambar
-    $imagePath = null;
-    if (!empty($_FILES['image']['name'])) {
+    // Handle upload gambar (Maks. 10 gambar)
+    $imageJson = null;
+    if (!empty($_FILES['image']['name'][0])) {
         $allowed = ['image/jpeg','image/png','image/webp'];
-        $ftype   = mime_content_type($_FILES['image']['tmp_name']);
-        if (!in_array($ftype, $allowed)) {
-            $_SESSION['sell_error'] = 'Format gambar harus JPG, PNG, atau WebP.';
+        $imagePaths = [];
+        $filesCount = count($_FILES['image']['name']);
+        
+        if ($filesCount > 10) {
+            $_SESSION['sell_error'] = 'Maksimal 10 gambar yang diperbolehkan.';
             $_SESSION['sell_old']   = $old;
-            header('Location: sell.php');
+            header('Location: ' . BASE_URL . 'sell.php');
             exit;
         }
-        $ext      = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $filename = 'prod_' . uniqid() . '.' . $ext;
-        $dest     = __DIR__ . '/assets/images/uploads/' . $filename;
-        if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0755, true);
-        move_uploaded_file($_FILES['image']['tmp_name'], $dest);
-        $imagePath = 'assets/images/uploads/' . $filename;
+
+        for ($i = 0; $i < $filesCount; $i++) {
+            if ($_FILES['image']['error'][$i] !== UPLOAD_ERR_OK) continue;
+            $ftype = mime_content_type($_FILES['image']['tmp_name'][$i]);
+            if (!in_array($ftype, $allowed)) {
+                $_SESSION['sell_error'] = 'Format gambar harus JPG, PNG, atau WebP.';
+                $_SESSION['sell_old']   = $old;
+                header('Location: ' . BASE_URL . 'sell.php');
+                exit;
+            }
+            $ext      = pathinfo($_FILES['image']['name'][$i], PATHINFO_EXTENSION);
+            $filename = 'prod_' . uniqid() . '_' . $i . '.' . $ext;
+            $dest     = __DIR__ . '/assets/images/uploads/' . $filename;
+            if (!is_dir(dirname($dest))) mkdir(dirname($dest), 0755, true);
+            move_uploaded_file($_FILES['image']['tmp_name'][$i], $dest);
+            $imagePaths[] = 'assets/images/uploads/' . $filename;
+        }
+        
+        if (!empty($imagePaths)) {
+            $imageJson = json_encode($imagePaths);
+        }
     }
 
     // Insert ke DB
@@ -62,11 +86,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ');
     $stmt->execute([
         $user['id'], $category_id, $title, $description,
-        $price, $is_nego, $condition, $location, $imagePath
+        $price, $is_nego, $condition, $location, $imageJson
     ]);
 
-    $_SESSION['auth_success'] = 'Barang berhasil diposting! 🎉';
-    header('Location: /index.php');
+    $_SESSION['auth_success'] = 'Barang berhasil diposting!';
+    header('Location: ' . BASE_URL . 'index.php');
     exit;
 }
 ?>
@@ -78,55 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Jual Barang — KampusStore</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="assets/css/custom.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/global.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/navbar.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/sell.css"/>
   <style>
-    body{background:var(--surface);min-height:100vh;padding-top:68px}
-    .sell-wrap{max-width:680px;margin:40px auto;padding:0 24px 80px}
-    .sell-card{background:white;border:1px solid var(--hairline);border-radius:24px;padding:40px;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
-    @media(max-width:640px){.sell-card{padding:24px;border-radius:16px}}
-    .page-title{font-size:24px;font-weight:800;color:var(--ink);margin-bottom:4px;letter-spacing:-0.4px}
-    .page-sub{font-size:14px;color:var(--body);margin-bottom:32px}
-    .form-section{margin-bottom:28px}
-    .section-label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--hairline)}
-    .form-group{margin-bottom:18px}
-    .form-label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
-    .form-input,.form-select,.form-textarea{
-      width:100%;background:white;border:1.5px solid var(--hairline);
-      border-radius:12px;padding:12px 14px;
-      font-family:inherit;font-size:15px;color:var(--ink);
-      transition:border-color .2s,box-shadow .2s;outline:none;
-    }
-    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-    .form-textarea{resize:vertical;min-height:100px}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:480px){.form-grid{grid-template-columns:1fr}}
-    .price-wrap{position:relative}
-    .price-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:600;color:var(--body)}
-    .price-input{padding-left:42px!important}
-    .condition-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    @media(min-width:480px){.condition-grid{grid-template-columns:repeat(4,1fr)}}
-    .cond-option{display:none}
-    .cond-label{
-      display:flex;flex-direction:column;align-items:center;gap:4px;
-      padding:12px 8px;border:1.5px solid var(--hairline);border-radius:12px;
-      cursor:pointer;font-size:13px;font-weight:500;color:var(--body);
-      transition:all .2s;text-align:center;
-    }
-    .cond-label:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
-    .cond-option:checked + .cond-label{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
-    .cond-emoji{font-size:22px}
-    /* ── Upload Drop Zone ── */
-    .upload-zone{
-      display:block;
-      border:2px dashed #cbd5e1;
-      border-radius:16px;
-      background:#f8fafc;
-      padding:40px 24px;
-      text-align:center;
-      cursor:pointer;
-      transition:border-color .25s ease, background .25s ease, box-shadow .25s ease;
-      position:relative;
-    }
     .upload-zone:hover,
     .upload-zone.drag-over{
       border-color:var(--primary);
@@ -159,29 +139,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /* Preview */
     .upload-preview-wrap{
       display:none;
-      margin-top:16px;
+      margin-top:24px;
       position:relative;
     }
-    .upload-preview-img{
-      width:100%;max-height:220px;
-      object-fit:cover;
-      border-radius:12px;
-      border:1px solid var(--hairline);
-      display:block;
+    .preview-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:16px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--hairline);
     }
-    .upload-remove{
-      position:absolute;top:8px;right:8px;
-      width:28px;height:28px;border-radius:50%;
-      background:rgba(0,0,0,0.55);color:white;
+    .preview-title{
+      font-size:14px;font-weight:600;color:var(--ink);
+      display:flex;align-items:center;gap:8px;
+    }
+    .image-count-badge{
+      display:inline-flex;align-items:center;justify-content:center;
+      background:var(--primary);color:white;
+      border-radius:50%;width:24px;height:24px;
+      font-size:12px;font-weight:700;
+    }
+    #preview-gallery{
+      display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+      gap:12px;margin-bottom:16px;
+      padding:12px;background:var(--bg-light);
+      border-radius:12px;border:1px solid var(--hairline);
+    }
+    .preview-item{
+      position:relative;aspect-ratio:1;border-radius:10px;
+      overflow:hidden;border:1px solid var(--hairline);
+      background:white;
+    }
+    .preview-item img{
+      width:100%;height:100%;object-fit:cover;
+      transition:transform .2s ease;
+    }
+    .preview-item:hover img{
+      transform:scale(1.05);
+    }
+    .preview-item-remove{
+      position:absolute;top:6px;right:6px;
+      width:32px;height:32px;border-radius:50%;
+      background:rgba(0,0,0,0.6);color:white;
       border:none;cursor:pointer;font-size:14px;
       display:flex;align-items:center;justify-content:center;
       transition:background .15s;
+      opacity:0;
     }
-    .upload-remove:hover{background:rgba(239,68,68,0.85)}
-    .upload-file-name{
-      font-size:12px;color:var(--body);margin-top:8px;
-      text-align:center;
+    .preview-item:hover .preview-item-remove{
+      opacity:1;
     }
+    .preview-item-remove:hover{background:rgba(239,68,68,0.9)}
+    .upload-actions{
+      display:flex;gap:10px;flex-wrap:wrap;
+    }
+    .btn-add-more{
+      flex:1;min-width:160px;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      padding:12px 16px;background:var(--primary);color:white;
+      border:none;border-radius:10px;
+      font-size:14px;font-weight:600;cursor:pointer;
+      transition:background .2s;
+    }
+    .btn-add-more:hover{background:var(--primary-dark)}
+    .btn-remove-all{
+      flex:1;min-width:160px;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      padding:12px 16px;background:#fef2f2;color:#dc2626;
+      border:1.5px solid #fecaca;border-radius:10px;
+      font-size:14px;font-weight:600;cursor:pointer;
+      transition:background .2s;
+    }
+    .btn-remove-all:hover{background:#fee2e2}
     .nego-toggle{display:flex;align-items:center;gap:10px}
     .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
     .toggle-switch input{display:none}
@@ -207,19 +235,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .char-count{font-size:12px;color:var(--muted);text-align:right;margin-top:4px}
   </style>
 </head>
-<body>
+<body class="page-container">
 <?php require_once __DIR__ . '/components/navbar.php'; ?>
 
 <div class="sell-wrap">
-  <h1 class="page-title">📦 Posting Barang</h1>
+  <h1 class="page-title"><i class="fas fa-box"></i> Posting Barang</h1>
   <p class="page-sub">Isi detail barang yang ingin kamu jual kepada sesama mahasiswa.</p>
 
   <?php if ($error): ?>
-    <div class="alert-error">⚠️ <?= htmlspecialchars($error) ?></div>
+    <div class="alert-error"><i class="fas fa-triangle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
   <?php endif; ?>
 
   <div class="sell-card">
-    <form method="POST" enctype="multipart/form-data" id="sell-form">
+    <form method="POST" enctype="multipart/form-data" id="sell-form" <?= !$hasWhatsApp ? 'style="pointer-events:none;opacity:0.5"' : '' ?>>
 
       <!-- Info Dasar -->
       <div class="form-section">
@@ -247,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <option value="">Pilih kategori…</option>
               <?php foreach ($cats as $cat): ?>
                 <option value="<?= $cat['id'] ?>" <?= ($old['category_id'] ?? 0) == $cat['id'] ? 'selected' : '' ?>>
-                  <?= $cat['icon'] ?> <?= htmlspecialchars($cat['name']) ?>
+                  <?= htmlspecialchars($cat['name']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
@@ -267,10 +295,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="condition-grid">
           <?php
             $conditions = [
-              'like_new' => ['label'=>'Seperti Baru','emoji'=>'✨'],
-              'good'     => ['label'=>'Kondisi Baik','emoji'=>'👍'],
-              'fair'     => ['label'=>'Cukup Baik','emoji'=>'🙂'],
-              'used'     => ['label'=>'Bekas','emoji'=>'📦'],
+              'like_new' => ['label'=>'Seperti Baru','emoji'=>'<i class="fas fa-star"></i>'],
+              'good'     => ['label'=>'Kondisi Baik','emoji'=>'<i class="fas fa-thumbs-up"></i>'],
+              'fair'     => ['label'=>'Cukup Baik','emoji'=>'<i class="fas fa-smile"></i>'],
+              'used'     => ['label'=>'Bekas','emoji'=>'<i class="fas fa-box"></i>'],
             ];
             foreach ($conditions as $val => $c):
               $checked = ($old['condition'] ?? 'good') === $val ? 'checked' : '';
@@ -316,35 +344,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
 
-      <!-- Foto -->
       <div class="form-section">
-        <div class="section-label">Foto Produk</div>
+        <div class="section-label">Foto Produk (Maksimal 10 Foto)</div>
 
         <div class="upload-zone" id="upload-zone" onclick="document.getElementById('image').click()">
-          <input type="file" id="image" name="image"
+          <input type="file" id="image" name="image[]"
             accept="image/jpeg,image/png,image/webp"
             onclick="event.stopPropagation()"
-            onchange="previewImage(this)"/>
+            multiple
+            onchange="previewImages(this)"/>
 
           <div id="upload-placeholder">
-            <div class="upload-icon">📸</div>
-            <div class="upload-main-text">Drag &amp; drop foto di sini</div>
+            <div class="upload-icon"><i class="fas fa-images" style="font-size: 24px;"></i></div>
+            <div class="upload-main-text">Drag &amp; drop foto-foto di sini</div>
             <div class="upload-sub-text">atau</div>
-            <span class="upload-browse">Pilih dari galeri</span>
-            <div class="upload-sub-text" style="margin-top:10px">JPG, PNG, WebP · Maks. 5 MB</div>
+            <span class="upload-browse">Pilih hingga 10 foto</span>
+            <div class="upload-sub-text" style="margin-top:10px">JPG, PNG, WebP · Maks. 10 gambar (Maks. 5 MB per gambar)</div>
           </div>
         </div>
 
         <!-- Preview setelah foto dipilih -->
-        <div class="upload-preview-wrap" id="upload-preview-wrap">
-          <img id="upload-preview-img" class="upload-preview-img" src="" alt="Preview"/>
-          <button type="button" class="upload-remove" onclick="removeImage()" title="Hapus foto">✕</button>
-          <div class="upload-file-name" id="upload-file-name"></div>
+        <div class="upload-preview-wrap" id="upload-preview-wrap" style="display:none;">
+          <div class="preview-header">
+            <div class="preview-title">
+              <i class="fas fa-images" style="font-size:16px;"></i>
+              Foto yang dipilih
+              <span class="image-count-badge" id="image-count">0</span>
+            </div>
+          </div>
+          <div id="preview-gallery"></div>
+          <div class="upload-actions">
+            <button type="button" class="btn-add-more" id="btn-add-more" onclick="document.getElementById('image').click(); event.preventDefault();">
+              <i class="fas fa-plus"></i> Tambah Foto
+            </button>
+            <button type="button" class="btn-remove-all" id="btn-remove-all" onclick="removeAllImages(); event.preventDefault();">
+              <i class="fas fa-trash"></i> Hapus Semua
+            </button>
+          </div>
         </div>
       </div>
 
       <button type="submit" class="btn-submit" id="submit-btn">
-        🚀 Posting Barang Sekarang
+        <i class="fas fa-rocket"></i> Posting Barang Sekarang
       </button>
     </form>
   </div>
@@ -356,47 +397,118 @@ document.getElementById('is_nego').addEventListener('change', function() {
   document.getElementById('nego-label').textContent = this.checked ? 'Harga bisa nego' : 'Harga fix';
 });
 
-function previewImage(input) {
-  if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
+// Store untuk menyimpan file yang dipilih dengan ID unik
+let selectedFiles = [];
+let fileCounter = 0;
 
-  // Validasi ukuran 5MB
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Ukuran file maksimal 5MB.');
-    input.value = '';
-    return;
+function previewImages(input) {
+  if (!input.files || input.files.length === 0) return;
+  
+  // Tambahkan file baru ke selectedFiles
+  for (let file of input.files) {
+    // Cek ukuran file
+    if (file.size > 5 * 1024 * 1024) {
+      alert(`File "${file.name}" melebihi ukuran maksimal 5 MB.`);
+      continue;
+    }
+    
+    // Cek duplikat
+    if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+      continue;
+    }
+    
+    const fileId = fileCounter++;
+    selectedFiles.push({ id: fileId, file: file });
   }
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('upload-placeholder').style.display    = 'none';
-    document.getElementById('upload-preview-wrap').style.display   = 'block';
-    document.getElementById('upload-preview-img').src              = e.target.result;
-    document.getElementById('upload-file-name').textContent        = `📎 ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
-    document.getElementById('upload-zone').style.padding           = '12px';
-  };
-  reader.readAsDataURL(file);
+  
+  // Cek max 10 file
+  if (selectedFiles.length > 10) {
+    selectedFiles = selectedFiles.slice(0, 10);
+    alert('Maksimal 10 gambar. File berlebih telah dihapus.');
+  }
+  
+  // Update file input
+  updateFileInput();
+  renderPreview();
 }
 
-function removeImage() {
-  document.getElementById('image').value                          = '';
-  document.getElementById('upload-preview-img').src               = '';
-  document.getElementById('upload-preview-wrap').style.display    = 'none';
-  document.getElementById('upload-placeholder').style.display     = 'block';
-  document.getElementById('upload-zone').style.padding            = '';
+function updateFileInput() {
+  const dt = new DataTransfer();
+  selectedFiles.forEach(item => dt.items.add(item.file));
+  document.getElementById('image').files = dt.files;
 }
+
+function renderPreview() {
+  const container = document.getElementById('preview-gallery');
+  container.innerHTML = '';
+  
+  selectedFiles.forEach(item => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const div = document.createElement('div');
+      div.className = 'preview-item';
+      div.dataset.fileId = item.id;
+      div.innerHTML = `
+        <img src="${e.target.result}" alt="Preview">
+        <button type="button" class="preview-item-remove" data-file-id="${item.id}">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
+      container.appendChild(div);
+    };
+    reader.readAsDataURL(item.file);
+  });
+  
+  // Update counter dan tampilkan preview wrap, sembunyikan upload zone jika ada gambar
+  const hasFiles = selectedFiles.length > 0;
+  document.getElementById('image-count').textContent = selectedFiles.length;
+  document.getElementById('upload-zone').style.display = hasFiles ? 'none' : 'block';
+  document.getElementById('upload-placeholder').style.display = hasFiles ? 'none' : 'block';
+  document.getElementById('upload-preview-wrap').style.display = hasFiles ? 'block' : 'none';
+}
+
+function removeAllImages() {
+  document.getElementById('image').value = '';
+  selectedFiles = [];
+  fileCounter = 0;
+  document.getElementById('preview-gallery').innerHTML = '';
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('upload-preview-wrap').style.display = 'none';
+}
+
+// Event delegation untuk delete button
+document.getElementById('preview-gallery').addEventListener('click', function(evt) {
+  if (evt.target.closest('.preview-item-remove')) {
+    evt.preventDefault();
+    const fileId = parseInt(evt.target.closest('.preview-item-remove').dataset.fileId, 10);
+    selectedFiles = selectedFiles.filter(item => item.id !== fileId);
+    updateFileInput();
+    
+    if (selectedFiles.length === 0) {
+      removeAllImages();
+    } else {
+      const element = document.querySelector(`[data-file-id="${fileId}"]`);
+      if (element) element.remove();
+      document.getElementById('image-count').textContent = selectedFiles.length;
+    }
+  }
+});
 
 // Drag & Drop
 const zone = document.getElementById('upload-zone');
-zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragover', e => { 
+  e.preventDefault(); 
+  zone.classList.add('drag-over'); 
+});
+
 zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+
 zone.addEventListener('drop', e => {
   e.preventDefault();
   zone.classList.remove('drag-over');
-  const dt = e.dataTransfer;
-  if (dt.files && dt.files[0]) {
-    document.getElementById('image').files = dt.files; // won't work in all browsers
-    previewImage({ files: dt.files });
+  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    previewImages({ files: e.dataTransfer.files });
   }
 });
 
@@ -405,6 +517,13 @@ document.getElementById('sell-form').addEventListener('submit', function() {
   btn.textContent = '⏳ Memposting…';
   btn.disabled = true;
 });
+
+<?php if (!$hasWhatsApp): ?>
+// Show popup notification if WhatsApp not set
+document.addEventListener('DOMContentLoaded', () => {
+  showToast('⚠️ Tambahkan nomor WhatsApp di profil Anda untuk mulai berjualan', 'warning', 6000);
+});
+<?php endif; ?>
 </script>
 </body>
 </html>

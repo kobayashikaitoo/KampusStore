@@ -27,7 +27,7 @@ function isSuperAdmin(): bool
 function requireAdmin(): void
 {
     if (!isLoggedIn()) {
-        header('Location: /auth/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+        header('Location: ' . BASE_URL . 'auth/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
         exit;
     }
     if (!isAdmin()) {

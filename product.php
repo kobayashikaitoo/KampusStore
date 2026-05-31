@@ -7,14 +7,15 @@ require_once __DIR__ . '/functions/auth.php';
 $db = getDB();
 $id = (int)($_GET['id'] ?? 0);
 
-if (!$id) { header('Location: /index.php'); exit; }
+if (!$id) { header('Location: ' . BASE_URL . 'index.php'); exit; }
 
 // Fetch product
 $stmt = $db->prepare('
-    SELECT p.*, c.name AS cat_name, c.icon AS cat_icon, c.slug AS cat_slug,
+    SELECT p.*, c.name AS cat_name, c.slug AS cat_slug,
            u.id AS seller_id, u.username AS seller_username,
            u.name AS seller_name, u.campus AS seller_campus,
            u.is_verified AS seller_verified, u.is_trusted AS seller_trusted,
+           u.whatsapp_number AS seller_whatsapp,
            u.created_at AS seller_joined
     FROM products p
     JOIN categories c ON p.category_id = c.id
@@ -27,7 +28,7 @@ $product = $stmt->fetch();
 
 if (!$product) {
     http_response_code(404);
-    header('Location: /index.php');
+    header('Location: ' . BASE_URL . 'index.php');
     exit;
 }
 
@@ -44,7 +45,7 @@ if (isLoggedIn()) {
 
 // Related products (same category, not this one)
 $relStmt = $db->prepare('
-    SELECT p.id, p.title, p.price, p.is_nego, p.condition, p.image,
+    SELECT p.id, p.title, p.price, p.is_nego, p.`condition`, p.image,
            u.name AS seller_name, u.is_verified AS seller_verified
     FROM products p JOIN users u ON p.seller_id = u.id
     WHERE p.category_id = ? AND p.id != ? AND p.status = "active"
@@ -65,7 +66,7 @@ $condLabels = [
     'used'     => ['label'=>'Bekas',        'color'=>'#64748b','bg'=>'#f8fafc'],
 ];
 $cond = $condLabels[$product['condition']] ?? $condLabels['good'];
-$imgSrc = $product['image'] ? '/' . $product['image'] : '/assets/images/placeholder.png';
+$imgSrc = $product['image'] ? BASE_URL . $product['image'] : BASE_URL . 'assets/images/placeholder.png';
 $pageTitle = e($product['title']) . ' — KampusStore';
 ?>
 <!DOCTYPE html>
@@ -77,91 +78,20 @@ $pageTitle = e($product['title']) . ' — KampusStore';
   <meta name="description" content="<?= e(truncate($product['description'] ?? $product['title'], 120)) ?>"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/css/custom.css"/>
-  <style>
-    body{background:var(--surface);min-height:100vh;padding-top:68px}
-    .pd-wrap{max-width:1100px;margin:0 auto;padding:32px 24px 80px}
-
-    /* Breadcrumb */
-    .breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-bottom:24px;flex-wrap:wrap}
-    .breadcrumb a{color:var(--body);text-decoration:none}.breadcrumb a:hover{color:var(--primary);text-decoration:underline}
-    .breadcrumb-sep{color:var(--hairline)}
-
-    /* Main grid */
-    .pd-grid{display:grid;grid-template-columns:1fr 380px;gap:32px;align-items:start}
-    @media(max-width:860px){.pd-grid{grid-template-columns:1fr}}
-
-    /* Image */
-    .pd-img-wrap{background:white;border-radius:20px;overflow:hidden;border:1px solid var(--hairline);aspect-ratio:4/3}
-    .pd-img{width:100%;height:100%;object-fit:contain;padding:24px}
-    .pd-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px}
-
-    /* Info Card */
-    .pd-info{background:white;border:1px solid var(--hairline);border-radius:20px;padding:28px;box-shadow:0 2px 16px rgba(0,0,0,0.05)}
-    .pd-cat{font-size:12px;font-weight:600;color:var(--primary);letter-spacing:0.3px;margin-bottom:10px}
-    .pd-title{font-size:22px;font-weight:800;color:var(--ink);line-height:1.3;letter-spacing:-0.4px;margin-bottom:12px}
-    .pd-price-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-    .pd-price{font-size:28px;font-weight:800;color:var(--ink);letter-spacing:-0.5px}
-    .pd-nego{font-size:13px;font-weight:600;color:#d97706;background:#fffbeb;padding:3px 10px;border-radius:999px;border:1px solid #fde68a}
-    .pd-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-    .pd-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:999px}
-    .pd-divider{height:1px;background:var(--hairline);margin:20px 0}
-
-    /* Meta info */
-    .pd-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-    .pd-meta-item label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px}
-    .pd-meta-item span{font-size:14px;font-weight:500;color:var(--ink)}
-
-    /* Description */
-    .pd-desc-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:8px}
-    .pd-desc{font-size:14px;color:var(--body);line-height:1.7;white-space:pre-wrap;word-break:break-word}
-
-    /* Seller card */
-    .seller-card{background:white;border:1px solid var(--hairline);border-radius:20px;padding:24px;margin-top:16px;box-shadow:0 2px 16px rgba(0,0,0,0.05)}
-    .seller-card-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
-    .seller-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:white;flex-shrink:0}
-    .seller-info-name{font-size:16px;font-weight:700;color:var(--ink)}
-    .seller-info-sub{font-size:12px;color:var(--muted);margin-top:2px}
-    .seller-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-    .seller-stat{background:var(--surface);border-radius:10px;padding:10px;text-align:center}
-    .seller-stat-num{font-size:18px;font-weight:700;color:var(--ink)}
-    .seller-stat-lbl{font-size:11px;color:var(--muted)}
-
-    /* CTA buttons */
-    .btn-primary{width:100%;height:50px;background:var(--primary);color:white;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:background .2s,transform .15s,box-shadow .2s;margin-bottom:10px}
-    .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.3)}
-    .btn-outline{width:100%;height:50px;background:white;color:var(--ink);border:1.5px solid var(--hairline);border-radius:14px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:all .2s;margin-bottom:10px}
-    .btn-outline:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
-    .btn-wishlist{width:100%;height:44px;background:white;border:1.5px solid var(--hairline);border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
-    .btn-wishlist:hover{border-color:#ef4444;color:#ef4444;background:#fef2f2}
-    .btn-wishlist.saved{border-color:#ef4444;color:#ef4444;background:#fef2f2}
-
-    /* Related */
-    .related-section{margin-top:48px}
-    .related-title{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:20px}
-    .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-    .related-card{background:white;border:1px solid var(--hairline);border-radius:16px;overflow:hidden;text-decoration:none;transition:transform .2s,box-shadow .2s;display:block}
-    .related-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
-    .related-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--surface)}
-    .related-body{padding:12px}
-    .related-title-text{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .related-price{font-size:14px;font-weight:700;color:var(--ink)}
-    .related-seller{font-size:11px;color:var(--muted);margin-top:3px}
-
-    /* Status badge */
-    .status-sold{background:#f0fdf4;color:#16a34a;padding:6px 16px;border-radius:8px;font-size:13px;font-weight:600;display:inline-block;margin-bottom:12px}
-    .status-inactive{background:#f8fafc;color:var(--muted);padding:6px 16px;border-radius:8px;font-size:13px;font-weight:600;display:inline-block;margin-bottom:12px}
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/global.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/navbar.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/product-detail.css"/>
 </head>
-<body>
+<body class="page-container">
 <?php require_once __DIR__ . '/components/navbar.php'; ?>
 
 <div class="pd-wrap">
   <!-- Breadcrumb -->
   <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/index.php">🏪 KampusStore</a>
+    <a href="index.php">KampusStore</a>
     <span class="breadcrumb-sep">›</span>
-    <a href="/index.php?cat=<?= e($product['cat_slug']) ?>"><?= $product['cat_icon'] ?> <?= e($product['cat_name']) ?></a>
+    <a href="index.php?cat=<?= e($product['cat_slug']) ?>"><?= e($product['cat_name']) ?></a>
     <span class="breadcrumb-sep">›</span>
     <span><?= e(truncate($product['title'], 50)) ?></span>
   </nav>
@@ -169,12 +99,58 @@ $pageTitle = e($product['title']) . ' — KampusStore';
   <div class="pd-grid">
     <!-- Left: Image -->
     <div>
-      <div class="pd-img-wrap">
-        <?php if ($product['image']): ?>
-          <img src="<?= $imgSrc ?>" alt="<?= e($product['title']) ?>" class="pd-img"
-               onerror="this.src='/assets/images/placeholder.png'"/>
-        <?php else: ?>
-          <div class="pd-img-placeholder">📦</div>
+      <div class="pd-img-wrap" style="position:relative; aspect-ratio:4/3; border-radius:20px; overflow:hidden; border:1px solid var(--hairline); background:white;">
+        <?php 
+        $images = getProductAllImages($product['image']);
+        if (count($images) > 1): 
+        ?>
+          <!-- Slider Container -->
+          <div class="pd-slider" id="pd-slider" style="display:flex; width:100%; height:100%; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; -webkit-overflow-scrolling:touch;">
+            <?php foreach ($images as $idx => $img): 
+              $fullPath = BASE_URL . $img;
+            ?>
+              <div style="flex:0 0 100%; width:100%; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; padding:16px;">
+                <img src="<?= $fullPath ?>" alt="<?= e($product['title']) ?> - <?= $idx + 1 ?>" style="width:100%; height:100%; object-fit:contain; border-radius:12px;" onerror="this.src='<?= BASE_URL ?>assets/images/placeholder.png'"/>
+              </div>
+            <?php endforeach; ?>
+          </div>
+          
+          <!-- Slider dots -->
+          <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:10; background:rgba(0,0,0,0.3); padding:4px 10px; border-radius:999px;">
+            <?php foreach ($images as $idx => $img): ?>
+              <button onclick="scrollToSlide(<?= $idx ?>)" class="slide-dot" style="width:7px; height:7px; border-radius:50%; border:none; background:rgba(255,255,255,<?= $idx === 0 ? '1' : '0.4' ?>); cursor:pointer; padding:0; transition:background .2s;"></button>
+            <?php endforeach; ?>
+          </div>
+          
+          <script>
+            function scrollToSlide(idx) {
+              const slider = document.getElementById('pd-slider');
+              const width = slider.clientWidth;
+              slider.scrollTo({ left: width * idx, behavior: 'smooth' });
+              
+              // Update dots active state
+              const dots = document.querySelectorAll('.slide-dot');
+              dots.forEach((dot, i) => {
+                dot.style.background = i === idx ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.4)';
+              });
+            }
+            
+            // Listen to scroll to update dots
+            document.getElementById('pd-slider').addEventListener('scroll', function() {
+              const width = this.clientWidth;
+              const idx = Math.round(this.scrollLeft / width);
+              const dots = document.querySelectorAll('.slide-dot');
+              dots.forEach((dot, i) => {
+                dot.style.background = i === idx ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.4)';
+              });
+            });
+          </script>
+        <?php else: 
+          $singleImg = BASE_URL . getProductImage($product['image']);
+        ?>
+          <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:16px;">
+            <img src="<?= $singleImg ?>" alt="<?= e($product['title']) ?>" style="width:100%; height:100%; object-fit:contain; border-radius:12px;" onerror="this.src='<?= BASE_URL ?>assets/images/placeholder.png'"/>
+          </div>
         <?php endif; ?>
       </div>
 
@@ -183,10 +159,10 @@ $pageTitle = e($product['title']) . ' — KampusStore';
         <div class="related-title">🔗 Barang Serupa</div>
         <div class="related-grid">
           <?php foreach ($related as $r): ?>
-            <a href="/product.php?id=<?= (int)$r['id'] ?>" class="related-card">
-              <img src="<?= $r['image'] ? '/'.e($r['image']) : '/assets/images/placeholder.png' ?>"
+            <a href="product.php?id=<?= (int)$r['id'] ?>" class="related-card">
+              <img src="<?= $r['image'] ? BASE_URL.e($r['image']) : BASE_URL.'assets/images/placeholder.png' ?>"
                    alt="<?= e($r['title']) ?>" class="related-img"
-                   onerror="this.src='/assets/images/placeholder.png'" loading="lazy"/>
+                   onerror="this.src='<?= BASE_URL ?>assets/images/placeholder.png'" loading="lazy"/>
               <div class="related-body">
                 <div class="related-title-text"><?= e($r['title']) ?></div>
                 <div class="related-price"><?= formatRupiah($r['price']) ?></div>
@@ -202,10 +178,10 @@ $pageTitle = e($product['title']) . ' — KampusStore';
     <!-- Right: Info + Seller -->
     <div>
       <div class="pd-info">
-        <div class="pd-cat"><?= $product['cat_icon'] ?> <?= e($product['cat_name']) ?></div>
+        <div class="pd-cat"><?= e($product['cat_name']) ?></div>
 
         <?php if ($product['status'] === 'sold'): ?>
-          <div class="status-sold">✅ Barang ini sudah terjual</div>
+          <div class="status-sold">Barang ini sudah terjual</div>
         <?php endif; ?>
 
         <h1 class="pd-title"><?= e($product['title']) ?></h1>
@@ -221,9 +197,6 @@ $pageTitle = e($product['title']) . ' — KampusStore';
           <span class="pd-badge" style="background:<?= $cond['bg'] ?>;color:<?= $cond['color'] ?>">
             ✦ <?= $cond['label'] ?>
           </span>
-          <?php if ($product['seller_verified']): ?>
-            <span class="pd-badge" style="background:#eff6ff;color:#2563eb">✓ Verified Student</span>
-          <?php endif; ?>
           <?php if ($product['seller_trusted']): ?>
             <span class="pd-badge" style="background:#fdf4ff;color:#7c3aed">🏅 Trusted Seller</span>
           <?php endif; ?>
@@ -232,7 +205,7 @@ $pageTitle = e($product['title']) . ' — KampusStore';
         <div class="pd-meta">
           <?php if ($product['location']): ?>
           <div class="pd-meta-item">
-            <label>📍 Lokasi</label>
+            <label><i class="fas fa-map-pin"></i> Lokasi</label>
             <span><?= e($product['location']) ?></span>
           </div>
           <?php endif; ?>
@@ -241,11 +214,11 @@ $pageTitle = e($product['title']) . ' — KampusStore';
             <span><?= date('d M Y', strtotime($product['created_at'])) ?></span>
           </div>
           <div class="pd-meta-item">
-            <label>👁️ Dilihat</label>
+            <label><i class="fas fa-eye"></i> Dilihat</label>
             <span><?= number_format($product['views']) ?>×</span>
           </div>
           <div class="pd-meta-item">
-            <label>🏷️ Status</label>
+            <label><i class="fas fa-tag"></i> Status</label>
             <span><?= $product['status'] === 'active' ? 'Tersedia' : ucfirst($product['status']) ?></span>
           </div>
         </div>
@@ -261,27 +234,29 @@ $pageTitle = e($product['title']) . ' — KampusStore';
 
         <?php if (isLoggedIn() && $_SESSION['user_id'] === (int)$product['seller_id']): ?>
           <!-- Own product -->
-          <a href="/my-listings.php" class="btn-outline">📦 Kelola Barang Saya</a>
+          <a href="my-listings.php" class="btn-outline"><i class="fas fa-box"></i> Kelola Barang Saya</a>
         <?php else: ?>
           <!-- CTA -->
-          <a href="/seller.php?id=<?= (int)$product['seller_id'] ?>" class="btn-primary">
-            💬 Chat Penjual
-          </a>
-          <button
-            class="btn-wishlist <?= $isSaved ? 'saved' : '' ?>"
-            id="wishlist-btn"
-            data-id="<?= (int)$id ?>"
-            onclick="toggleWishlistDetail(this)"
-          >
-            <span id="wishlist-icon"><?= $isSaved ? '♥' : '♡' ?></span>
-            <span id="wishlist-label"><?= $isSaved ? 'Tersimpan di Wishlist' : 'Simpan ke Wishlist' ?></span>
-          </button>
+          <div class="pd-actions-row">
+            <a href="https://wa.me/<?= preg_replace('/[^0-9]/', '', $product['seller_whatsapp']) ?>" target="_blank" class="btn-primary" style="margin-bottom:0">
+              <i class="fab fa-whatsapp"></i> Chat WhatsApp
+            </a>
+            <button
+              class="btn-wishlist <?= $isSaved ? 'saved' : '' ?>"
+              id="wishlist-btn"
+              data-id="<?= (int)$id ?>"
+              onclick="toggleWishlistDetail(this)"
+              style="margin-bottom:0"
+            >
+              <i class="fas fa-heart"></i> <span id="wishlist-label"><?= $isSaved ? 'Disimpan' : 'Simpan' ?></span>
+            </button>
+          </div>
         <?php endif; ?>
         <?php endif; ?>
 
         <?php if (isLoggedIn() && $_SESSION['user_id'] !== (int)$product['seller_id']): ?>
           <div style="text-align:center;margin-top:16px">
-            <a href="/report.php?type=product&id=<?= (int)$id ?>" style="font-size:12px;color:var(--muted);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">🚩 Laporkan barang ini</a>
+            <a href="report.php?type=product&id=<?= (int)$id ?>" style="font-size:12px;color:var(--muted);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">Laporkan barang ini</a>
           </div>
         <?php endif; ?>
       </div>
@@ -289,7 +264,7 @@ $pageTitle = e($product['title']) . ' — KampusStore';
       <!-- Seller Card -->
       <div class="seller-card">
         <div class="seller-card-head">
-          <a href="/seller.php?id=<?= (int)$product['seller_id'] ?>" style="display:flex;align-items:center;gap:14px;text-decoration:none;flex:1">
+          <a href="seller.php?id=<?= (int)$product['seller_id'] ?>" style="display:flex;align-items:center;gap:14px;text-decoration:none;flex:1">
             <div class="seller-avatar"><?= strtoupper(mb_substr($product['seller_name'], 0, 1)) ?></div>
             <div>
               <div class="seller-info-name"><?= e($product['seller_name']) ?></div>
@@ -309,21 +284,21 @@ $pageTitle = e($product['title']) . ' — KampusStore';
             <div class="seller-stat-lbl">Bergabung</div>
           </div>
         </div>
-        <a href="/seller.php?id=<?= (int)$product['seller_id'] ?>" class="btn-outline" style="margin-bottom:0">
-          👤 Lihat Profil Penjual
+        <a href="seller.php?id=<?= (int)$product['seller_id'] ?>" class="btn-outline" style="margin-bottom:0">
+          Lihat Profil Penjual
         </a>
       </div>
     </div>
   </div>
 </div>
 
-<script src="/assets/js/main.js" defer></script>
+<script src="<?= BASE_URL ?>assets/js/main.js" defer></script>
 <script>
 function toggleWishlistDetail(btn) {
   const id = btn.dataset.id;
   btn.disabled = true;
 
-  fetch('/api/wishlist_toggle.php', {
+  fetch(window.BASE_URL + 'api/wishlist_toggle.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'product_id=' + encodeURIComponent(id)
@@ -331,18 +306,16 @@ function toggleWishlistDetail(btn) {
   .then(r => r.json())
   .then(data => {
     if (data.status === 'unauthenticated') {
-      window.location.href = '/auth/login.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = '<?php echo BASE_URL; ?>auth/login.php?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
       return;
     }
     const icon  = document.getElementById('wishlist-icon');
     const label = document.getElementById('wishlist-label');
     if (data.saved) {
-      icon.textContent  = '♥';
-      label.textContent = 'Tersimpan di Wishlist';
+      label.textContent = 'Disimpan';
       btn.classList.add('saved');
     } else {
-      icon.textContent  = '♡';
-      label.textContent = 'Simpan ke Wishlist';
+      label.textContent = 'Simpan';
       btn.classList.remove('saved');
     }
     btn.style.transform = 'scale(1.03)';

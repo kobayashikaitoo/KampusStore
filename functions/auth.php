@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../config/db.php';
 
+/** @var string BASE_URL Auto-detected base URL from config/db.php */
+
 function isLoggedIn(): bool
 {
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
@@ -9,7 +11,7 @@ function isLoggedIn(): bool
 function requireLogin(): void
 {
     if (!isLoggedIn()) {
-        header('Location: /auth/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+        header('Location: ' . BASE_URL . 'auth/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
         exit;
     }
 }
@@ -17,7 +19,7 @@ function requireLogin(): void
 function redirectIfLoggedIn(): void
 {
     if (isLoggedIn()) {
-        header('Location: /index.php');
+        header('Location: ' . BASE_URL . 'index.php');
         exit;
     }
 }
@@ -44,7 +46,7 @@ function logoutUser(): void
     session_destroy();
 }
 
-function registerUser(string $username, string $name, string $password, string $campus = ''): array
+function registerUser(string $username, string $name, string $email, string $password, string $campus = ''): array
 {
     // Validasi username
     if (!preg_match('/^[a-zA-Z0-9_]{3,30}$/', $username)) {
@@ -60,12 +62,19 @@ function registerUser(string $username, string $name, string $password, string $
         return ['error' => 'Username sudah digunakan. Pilih username lain.'];
     }
 
+    // Cek email sudah dipakai
+    $stmt = $db->prepare('SELECT id FROM users WHERE email = ?');
+    $stmt->execute([$email]);
+    if ($stmt->fetch()) {
+        return ['error' => 'Email sudah digunakan.'];
+    }
+
     $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 
     $stmt = $db->prepare(
-        'INSERT INTO users (username, name, password, campus) VALUES (?, ?, ?, ?)'
+        'INSERT INTO users (username, name, email, password, campus) VALUES (?, ?, ?, ?, ?)'
     );
-    $stmt->execute([$username, $name, $hash, $campus]);
+    $stmt->execute([$username, $name, $email, $hash, $campus]);
 
     return ['ok' => true, 'id' => (int)$db->lastInsertId()];
 }

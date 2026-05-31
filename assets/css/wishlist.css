@@ -1,0 +1,152 @@
+/* ── Wishlist Grid ── */
+.wl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* ── Wishlist Card ── */
+.wl-card {
+  background: white;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.wl-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.wl-card-img-wrap {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.wl-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wl-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+
+.wl-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.85);
+}
+
+/* ── Sold Overlay ── */
+.sold-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sold-pill {
+  background: white;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 999px;
+}
+
+/* ── Card Body ── */
+.wl-card-body {
+  padding: 14px;
+}
+
+.wl-card-cat {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.wl-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-decoration: none;
+}
+
+.wl-card-title:hover {
+  color: var(--primary);
+}
+
+.wl-card-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.wl-card-nego {
+  font-size: 11px;
+  color: #d97706;
+  margin-left: 6px;
+}
+
+.wl-card-seller {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* ── Card Footer ── */
+.wl-card-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  gap: 8px;
+}
+
+.btn-view-sm {
+  flex: 1;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+
+.btn-view-sm:hover {
+  background: var(--primary-dark);
+}

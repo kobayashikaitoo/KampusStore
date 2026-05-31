@@ -17,12 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         adminLog('REPORT_' . strtoupper($action), 'reports', $rid);
         $_SESSION['admin_msg'] = 'Laporan diperbarui.';
     }
-    header('Location: /admin/reports.php'); exit;
+    header('Location: ' . BASE_URL . 'admin/reports.php'); exit;
 }
 
 $filter = $_GET['status'] ?? 'open';
-$where  = $filter !== 'all' ? "WHERE r.status = '$filter'" : '';
-$reports = $db->query("
+$where  = '';
+$params = [];
+if ($filter !== 'all' && in_array($filter, ['open', 'investigating', 'resolved', 'dismissed'])) {
+    $where  = 'WHERE r.status = ?';
+    $params = [$filter];
+}
+$reportsSql = "
     SELECT r.*, u.username AS reporter_username,
            p.title AS product_title, target.username AS target_username
     FROM reports r
@@ -31,19 +36,22 @@ $reports = $db->query("
     LEFT JOIN users target ON r.user_id = target.id
     $where
     ORDER BY r.created_at DESC
-")->fetchAll();
+";
+$reportsStmt = $db->prepare($reportsSql);
+$reportsStmt->execute($params);
+$reports = $reportsStmt->fetchAll();
 
 $msg = $_SESSION['admin_msg'] ?? null; unset($_SESSION['admin_msg']);
 $pageTitle = 'Laporan';
 require_once __DIR__ . '/layout_header.php';
 ?>
-<?php if ($msg): ?><div class="alert alert-success">✅ <?= e($msg) ?></div><?php endif; ?>
+<?php if ($msg): ?><div class="alert alert-success"><i class="fas fa-check"></i> <?= e($msg) ?></div><?php endif; ?>
 
 <div class="admin-card">
   <div class="admin-card-header">
-    <span class="admin-card-title">🚩 Laporan (<?= count($reports) ?>)</span>
+    <span class="admin-card-title"><i class="fas fa-flag"></i> Laporan (<?= count($reports) ?>)</span>
     <div class="table-toolbar">
-      <?php foreach (['open'=>'🔴 Terbuka','resolved'=>'✅ Selesai','dismissed'=>'⬜ Diabaikan','all'=>'Semua'] as $v=>$l): ?>
+      <?php foreach (['open'=>'<i class="fas fa-circle"></i> Terbuka','resolved'=>'<i class="fas fa-check"></i> Selesai','dismissed'=>'<i class="fas fa-circle"></i> Diabaikan','all'=>'Semua'] as $v=>$l): ?>
         <a href="?status=<?= $v ?>" class="btn-primary-sm <?= $filter===$v ? '' : '' ?>"
            style="<?= $filter===$v ? '' : 'background:var(--surface);color:var(--ink);box-shadow:none;border:1.5px solid var(--hairline)' ?>">
           <?= $l ?>
@@ -60,10 +68,10 @@ require_once __DIR__ . '/layout_header.php';
         <td><span style="font-size:13px;font-weight:600">@<?= e($r['reporter_username']) ?></span></td>
         <td>
           <?php if ($r['product_id']): ?>
-            <div style="font-size:12px;color:var(--muted)">📦 Produk</div>
+            <div style="font-size:12px;color:var(--muted)"><i class="fas fa-box"></i> Produk</div>
             <div style="font-size:13px;font-weight:500;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($r['product_title'] ?? '—') ?></div>
           <?php elseif ($r['user_id']): ?>
-            <div style="font-size:12px;color:var(--muted)">👤 User</div>
+            <div style="font-size:12px;color:var(--muted)"><i class="fas fa-user"></i> User</div>
             <div style="font-size:13px;font-weight:500">@<?= e($r['target_username'] ?? '—') ?></div>
           <?php else: ?>
             <span style="color:var(--muted)">—</span>
@@ -78,7 +86,7 @@ require_once __DIR__ . '/layout_header.php';
               <form method="POST" style="display:inline">
                 <input type="hidden" name="report_id" value="<?= (int)$r['id'] ?>"/>
                 <input type="hidden" name="action" value="resolved"/>
-                <button type="submit" class="btn-action btn-unban">✅ Selesai</button>
+                <button type="submit" class="btn-action btn-unban"><i class="fas fa-check"></i> Selesai</button>
               </form>
               <form method="POST" style="display:inline">
                 <input type="hidden" name="report_id" value="<?= (int)$r['id'] ?>"/>

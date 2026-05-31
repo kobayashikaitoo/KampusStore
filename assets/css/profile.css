@@ -1,0 +1,36 @@
+/* ── Profile Header ── */
+.pf-header{background:white;border:1px solid var(--hairline);border-radius:24px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.05);margin-bottom:20px}
+.pf-banner{height:110px;background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%)}
+.pf-header-body{padding:0 28px 28px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.pf-av-wrap{margin-top:-38px}
+.pf-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:white;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.pf-name{font-size:20px;font-weight:800;color:var(--ink);margin-top:10px;letter-spacing:-0.3px}
+.pf-username{font-size:14px;color:var(--muted);margin-bottom:10px}
+
+/* ── Profile Badges ── */
+.pf-badges{display:flex;gap:8px;flex-wrap:wrap}
+.pf-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:999px}
+.badge-v{background:#eff6ff;color:#2563eb}
+.badge-t{background:#fdf4ff;color:#7c3aed}
+.badge-r{background:#f8fafc;color:var(--body)}
+
+/* ── Profile Stats ── */
+.pf-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+@media(max-width:480px){.pf-stats{grid-template-columns:1fr 1fr}}
+.pf-stat{background:white;border:1px solid var(--hairline);border-radius:16px;padding:18px;text-align:center;text-decoration:none;transition:box-shadow .2s,transform .15s;display:block}
+.pf-stat:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.pf-stat-num{font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-0.5px}
+.pf-stat-lbl{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ── Profile Cards ── */
+.pf-card{background:white;border:1px solid var(--hairline);border-radius:20px;padding:28px;box-shadow:0 2px 16px rgba(0,0,0,0.05);margin-bottom:16px}
+.pf-section-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+
+/* ── Buttons ── */
+.btn-save{height:46px;padding:0 24px;background:var(--primary);color:white;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s,transform .15s}
+.btn-save:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.btn-logout-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn-logout{display:inline-flex;align-items:center;gap:8px;background:#fef2f2;color:#dc2626;font-family:inherit;font-size:14px;font-weight:600;padding:10px 20px;border-radius:12px;border:1.5px solid #fecaca;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn-logout:hover{background:#fee2e2}
+.btn-outline-lnk{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:1.5px solid var(--hairline);border-radius:12px;font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;transition:all .2s}
+.btn-outline-lnk:hover{border-color:var(--primary);color:var(--primary)}

@@ -33,7 +33,7 @@ function toggleWishlist(btn) {
   const id = btn.dataset.id;
   btn.disabled = true;
 
-  fetch('/api/wishlist_toggle.php', {
+  fetch(window.BASE_URL + 'api/wishlist_toggle.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'product_id=' + encodeURIComponent(id)
@@ -65,30 +65,58 @@ function toggleWishlist(btn) {
 
 
 // ── Toast ────────────────────────────────────────────────────
-function showToast(msg) {
-  let toast = document.getElementById('ks-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'ks-toast';
-    toast.style.cssText = `
-      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
-      background:#1e293b;color:white;
-      padding:12px 20px;border-radius:999px;
-      font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:500;
-      box-shadow:0 8px 24px rgba(0,0,0,0.2);
-      z-index:9999;opacity:0;transition:opacity .25s ease,transform .25s ease;
-      white-space:nowrap;max-width:90vw;text-align:center;
-    `;
-    document.body.appendChild(toast);
+function showToast(msg, type = 'info', duration = 3000) {
+  // Icons untuk berbagai tipe
+  const icons = {
+    success: '<i class="fas fa-check-circle"></i>',
+    error: '<i class="fas fa-exclamation-circle"></i>',
+    warning: '<i class="fas fa-exclamation-triangle"></i>',
+    info: '<i class="fas fa-info-circle"></i>'
+  };
+
+  // Create container jika belum ada
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
   }
-  toast.textContent = msg;
-  toast.style.opacity = '1';
-  toast.style.transform = 'translateX(-50%) translateY(0)';
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 2800);
+
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || icons['info']}</span>
+    <span class="toast-message">${msg}</span>
+    <button type="button" class="toast-close" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+
+  // Add to container
+  container.appendChild(toast);
+
+  // Close button handler
+  toast.querySelector('.toast-close').addEventListener('click', () => {
+    removeToast(toast);
+  });
+
+  // Auto remove
+  const timer = setTimeout(() => {
+    removeToast(toast);
+  }, duration);
+
+  // Store timer untuk cancel jika perlu
+  toast._timer = timer;
+}
+
+function removeToast(toast) {
+  if (toast._timer) clearTimeout(toast._timer);
+  toast.classList.add('remove');
+  setTimeout(() => {
+    if (toast.parentNode) toast.remove();
+  }, 300);
 }
 
 // ── Search (server-side) ───────────────────────────
@@ -98,7 +126,7 @@ const searchBtn   = document.getElementById('nav-search-btn');
 function doSearch() {
   const q = (searchInput?.value || '').trim();
   if (!q) return;
-  const url = new URL('/index.php', window.location.origin);
+  const url = new URL(window.BASE_URL + 'index.php', window.location.origin);
   url.searchParams.set('q', q);
   window.location.href = url.toString();
 }

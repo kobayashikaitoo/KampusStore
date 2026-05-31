@@ -12,7 +12,7 @@ $type = $_GET['type'] ?? ''; // 'product' or 'user'
 $targetId = (int)($_GET['id'] ?? 0);
 
 if (!in_array($type, ['product', 'user']) || !$targetId) {
-    header('Location: /index.php'); exit;
+    header('Location: ' . BASE_URL . 'index.php'); exit;
 }
 
 $targetName = '';
@@ -27,7 +27,7 @@ if ($type === 'product') {
 }
 
 if (!$targetName) {
-    header('Location: /index.php'); exit;
+    header('Location: ' . BASE_URL . 'index.php'); exit;
 }
 
 $error = null;
@@ -55,51 +55,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Laporkan — KampusStore</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/css/custom.css"/>
-  <style>
-    body{background:var(--surface);min-height:100vh;padding-top:68px}
-    .report-wrap{max-width:500px;margin:60px auto;padding:0 24px}
-    .report-card{background:white;border-radius:24px;border:1px solid var(--hairline);padding:32px;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
-    .report-title{font-size:22px;font-weight:800;color:var(--ink);margin-bottom:8px}
-    .report-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5}
-    .form-group{margin-bottom:16px}
-    .form-label{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
-    .form-input{width:100%;border:1.5px solid var(--hairline);border-radius:12px;padding:11px 14px;font-family:inherit;font-size:15px;color:var(--ink);background:white;outline:none;transition:border-color .2s}
-    .form-input:focus{border-color:var(--primary)}
-    textarea.form-input{min-height:120px;resize:vertical}
-    .btn-submit{width:100%;height:46px;background:#ef4444;color:white;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
-    .btn-submit:hover{background:#dc2626}
-    .btn-back{width:100%;height:46px;background:white;color:var(--ink);border:1.5px solid var(--hairline);border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;margin-top:12px;transition:all .2s}
-    .btn-back:hover{background:var(--surface)}
-    .alert-error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px;border-radius:12px;font-size:14px;margin-bottom:20px}
-    .success-state{text-align:center;padding:20px 0}
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/global.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/navbar.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/report.css"/>
 </head>
-<body>
+<body class="page-container">
 <?php require_once __DIR__ . '/components/navbar.php'; ?>
 
 <div class="report-wrap">
   <div class="report-card">
     <?php if ($success): ?>
       <div class="success-state">
-        <div style="font-size:64px;margin-bottom:16px">✅</div>
-        <h2 style="font-size:20px;font-weight:700;color:var(--ink);margin-bottom:8px">Laporan Diterima</h2>
-        <p style="font-size:14px;color:var(--muted);margin-bottom:24px">Terima kasih telah membantu menjaga keamanan KampusStore. Admin kami akan segera meninjau laporan ini.</p>
-        <a href="/index.php" class="btn-back">Kembali ke Beranda</a>
+        <div class="success-icon"><i class="fas fa-check"></i></div>
+        <h2 class="success-title">Laporan Diterima</h2>
+        <p class="success-desc">Terima kasih telah membantu menjaga keamanan KampusStore. Admin kami akan segera meninjau laporan ini.</p>
+        <a href="index.php" class="btn-back-report">Kembali ke Beranda</a>
       </div>
     <?php else: ?>
-      <h1 class="report-title">🚩 Buat Laporan</h1>
+      <h1 class="report-title"><i class="fas fa-flag"></i> Buat Laporan</h1>
       <p class="report-sub">Kamu akan melaporkan <?= $type === 'product' ? 'barang' : 'pengguna' ?>: <strong><?= e($targetName) ?></strong>. Pastikan laporanmu valid dan bukan spam.</p>
       
-      <?php if ($error): ?><div class="alert-error">⚠️ <?= e($error) ?></div><?php endif; ?>
+      <?php if ($error): ?>
+        <div class="alert-report-error"><i class="fas fa-triangle-exclamation"></i> <?= e($error) ?></div>
+      <?php endif; ?>
       
       <form method="POST">
-        <div class="form-group">
-          <label class="form-label" for="reason">Jelaskan alasannya *</label>
-          <textarea id="reason" name="reason" class="form-input" placeholder="Contoh: Barang palsu, penipuan, atau konten tidak pantas..." required></textarea>
+        <div class="report-form-group">
+          <label class="report-label" for="reason">Jelaskan alasannya *</label>
+          <textarea id="reason" name="reason" class="report-input report-textarea" placeholder="Contoh: Barang palsu, penipuan, atau konten tidak pantas..." required></textarea>
         </div>
-        <button type="submit" class="btn-submit">Kirim Laporan</button>
-        <a href="javascript:history.back()" class="btn-back">Batal</a>
+        <button type="submit" class="btn-submit-report">Kirim Laporan</button>
+        <a href="javascript:history.back()" class="btn-back-report">Batal</a>
       </form>
     <?php endif; ?>
   </div>

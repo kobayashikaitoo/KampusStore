@@ -8,7 +8,7 @@ header('Content-Type: application/json');
 
 // Harus login
 if (!isLoggedIn()) {
-    echo json_encode(['status' => 'unauthenticated', 'redirect' => '/auth/login.php']);
+    echo json_encode(['status' => 'unauthenticated', 'redirect' => BASE_URL . 'auth/login.php']);
     exit;
 }
 
@@ -30,7 +30,7 @@ $exists = $stmt->fetchColumn();
 if ($exists) {
     // Remove from wishlist
     $db->prepare('DELETE FROM wishlists WHERE user_id = ? AND product_id = ?')
-       ->execute([$userId, $productId]);
+        ->execute([$userId, $productId]);
     echo json_encode(['status' => 'removed', 'saved' => false]);
 } else {
     // Add to wishlist

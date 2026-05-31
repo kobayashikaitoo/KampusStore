@@ -57,7 +57,7 @@ function sellerBadge(string $type): string
     if ($type === 'trusted') {
         return '<span class="seller-badge seller-trusted">🏅 Trusted Seller</span>';
     }
-    return '<span class="seller-badge seller-verified">✓ Verified Student</span>';
+    return '<span class="seller-badge seller-verified"><i class="fas fa-check"></i> Verified Student</span>';
 }
 
 /**
@@ -80,4 +80,38 @@ function truncate(string $text, int $maxLength = 60): string
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+/**
+ * Mendapatkan URL gambar pertama produk (aman untuk string tunggal maupun JSON array).
+ */
+function getProductImage(?string $imageField): string
+{
+    if (empty($imageField)) {
+        return 'assets/images/placeholder.png';
+    }
+    if (strpos($imageField, '[') === 0) {
+        $decoded = json_decode($imageField, true);
+        if (is_array($decoded) && !empty($decoded)) {
+            return $decoded[0];
+        }
+    }
+    return $imageField;
+}
+
+/**
+ * Mendapatkan seluruh daftar URL gambar produk.
+ */
+function getProductAllImages(?string $imageField): array
+{
+    if (empty($imageField)) {
+        return ['assets/images/placeholder.png'];
+    }
+    if (strpos($imageField, '[') === 0) {
+        $decoded = json_decode($imageField, true);
+        if (is_array($decoded) && !empty($decoded)) {
+            return $decoded;
+        }
+    }
+    return [$imageField];
 }

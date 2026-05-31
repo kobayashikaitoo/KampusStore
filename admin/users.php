@@ -16,12 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action   = $_POST['action']   ?? '';
     $targetId = (int)($_POST['user_id'] ?? 0);
 
-    if (!$targetId) { header('Location: users.php'); exit; }
+    if (!$targetId) { header('Location: ' . BASE_URL . 'admin/users.php'); exit; }
 
     // Cegah admin hapus/ban dirinya sendiri
     if ($targetId === (int)$_SESSION['user_id']) {
         $_SESSION['admin_err'] = 'Tidak bisa melakukan aksi pada akun sendiri.';
-        header('Location: users.php'); exit;
+        header('Location: ' . BASE_URL . 'admin/users.php'); exit;
     }
 
     // Cegah mod ubah sesama admin (hanya super admin)
@@ -31,20 +31,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($targetUser['role'] === 'admin' && !isSuperAdmin()) {
         $_SESSION['admin_err'] = 'Hanya super admin yang bisa memodifikasi akun admin lain.';
-        header('Location: users.php'); exit;
+        header('Location: ' . BASE_URL . 'admin/users.php'); exit;
     }
 
     switch ($action) {
         case 'ban':
             $reason = trim($_POST['ban_reason'] ?? '');
-            $db->prepare('UPDATE users SET is_banned=1, ban_reason=?, banned_at=NOW() WHERE id=?')
+            $db->prepare('UPDATE users SET is_banned=1, ban_reason=? WHERE id=?')
                ->execute([$reason ?: null, $targetId]);
             adminLog('BAN_USER', 'users', $targetId);
             $_SESSION['admin_msg'] = "Akun @{$targetUser['username']} berhasil dibanned.";
             break;
 
         case 'unban':
-            $db->prepare('UPDATE users SET is_banned=0, ban_reason=NULL, banned_at=NULL WHERE id=?')
+            $db->prepare('UPDATE users SET is_banned=0, ban_reason=NULL WHERE id=?')
                ->execute([$targetId]);
             adminLog('UNBAN_USER', 'users', $targetId);
             $_SESSION['admin_msg'] = "Akun @{$targetUser['username']} berhasil di-unban.";
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_msg'] = "Akun @{$targetUser['username']} dihapus permanen.";
             break;
     }
-    header('Location: users.php'); exit;
+    header('Location: ' . BASE_URL . 'admin/users.php'); exit;
 }
 
 // ── Query users ──────────────────────────────────────────────
@@ -117,8 +117,8 @@ $pageTitle = 'Kelola Pengguna';
 require_once __DIR__ . '/layout_header.php';
 ?>
 
-<?php if ($msg): ?><div class="alert alert-success">✅ <?= htmlspecialchars($msg) ?></div><?php endif; ?>
-<?php if ($err): ?><div class="alert alert-error">⚠️ <?= htmlspecialchars($err) ?></div><?php endif; ?>
+<?php if ($msg): ?><div class="alert alert-success"><i class="fas fa-check"></i> <?= htmlspecialchars($msg) ?></div><?php endif; ?>
+<?php if ($err): ?><div class="alert alert-error"><i class="fas fa-triangle-exclamation"></i> <?= htmlspecialchars($err) ?></div><?php endif; ?>
 
 <div class="admin-card">
   <div class="admin-card-header">
@@ -130,14 +130,14 @@ require_once __DIR__ . '/layout_header.php';
       </div>
       <select name="role" class="filter-select" onchange="this.form.submit()">
         <option value="">Semua Role</option>
-        <option value="user"      <?= $filterRole==='user'      ? 'selected':'' ?>>👤 User</option>
-        <option value="moderator" <?= $filterRole==='moderator' ? 'selected':'' ?>>🛡️ Moderator</option>
-        <option value="admin"     <?= $filterRole==='admin'     ? 'selected':'' ?>>⚡ Admin</option>
+        <option value="user"      <?= $filterRole==='user'      ? 'selected':'' ?>><i class="fas fa-user"></i> User</option>
+        <option value="moderator" <?= $filterRole==='moderator' ? 'selected':'' ?>><i class="fas fa-shield"></i> Moderator</option>
+        <option value="admin"     <?= $filterRole==='admin'     ? 'selected':'' ?>><i class="fas fa-bolt"></i> Admin</option>
       </select>
       <select name="banned" class="filter-select" onchange="this.form.submit()">
         <option value="">Semua Status</option>
-        <option value="0" <?= $filterBan==='0' ? 'selected':'' ?>>✅ Aktif</option>
-        <option value="1" <?= $filterBan==='1' ? 'selected':'' ?>>🚫 Banned</option>
+        <option value="0" <?= $filterBan==='0' ? 'selected':'' ?>><i class="fas fa-check"></i> Aktif</option>
+        <option value="1" <?= $filterBan==='1' ? 'selected':'' ?>><i class="fas fa-ban"></i> Banned</option>
       </select>
       <button type="submit" class="btn-primary-sm">Filter</button>
     </form>
@@ -170,17 +170,17 @@ require_once __DIR__ . '/layout_header.php';
         </td>
         <td>
           <span class="badge badge-<?= $u['role'] ?>">
-            <?= $u['role']==='admin' ? '⚡ Admin' : ($u['role']==='moderator' ? '🛡️ Mod' : '👤 User') ?>
+            <?= $u['role']==='admin' ? '<i class="fas fa-bolt"></i> Admin' : ($u['role']==='moderator' ? '<i class="fas fa-shield"></i> Mod' : '<i class="fas fa-user"></i> User') ?>
           </span>
         </td>
         <td>
           <span class="badge <?= $u['is_banned'] ? 'badge-banned' : 'badge-active' ?>">
-            <?= $u['is_banned'] ? '🚫 Banned' : '✅ Aktif' ?>
+            <?= $u['is_banned'] ? '<i class="fas fa-ban"></i> Banned' : '<i class="fas fa-check"></i> Aktif' ?>
           </span>
         </td>
         <td>
           <span class="badge <?= $u['is_verified'] ? 'badge-active' : 'badge-inactive' ?>">
-            <?= $u['is_verified'] ? '✓' : '–' ?>
+            <?= $u['is_verified'] ? '<i class="fas fa-check"></i>' : '–' ?>
           </span>
         </td>
         <td style="font-size:12px;color:var(--muted)"><?= date('d M Y', strtotime($u['created_at'])) ?></td>
@@ -189,12 +189,12 @@ require_once __DIR__ . '/layout_header.php';
             <div style="display:flex;gap:5px;flex-wrap:wrap">
               <!-- Ban/Unban -->
               <?php if (!$u['is_banned']): ?>
-                <button class="btn-action btn-ban" onclick="banUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>')">🚫 Ban</button>
+                <button class="btn-action btn-ban" onclick="banUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>')"><i class="fas fa-ban"></i> Ban</button>
               <?php else: ?>
                 <form method="POST" style="display:inline">
                   <input type="hidden" name="action" value="unban"/>
                   <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-unban">✅ Unban</button>
+                  <button type="submit" class="btn-action btn-unban"><i class="fas fa-check"></i> Unban</button>
                 </form>
               <?php endif; ?>
               <!-- Verify -->
@@ -202,7 +202,7 @@ require_once __DIR__ . '/layout_header.php';
                 <form method="POST" style="display:inline">
                   <input type="hidden" name="action" value="verify"/>
                   <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-verify">✓ Verify</button>
+                  <button type="submit" class="btn-action btn-verify"><i class="fas fa-check"></i> Verify</button>
                 </form>
               <?php else: ?>
                 <form method="POST" style="display:inline">
@@ -216,7 +216,7 @@ require_once __DIR__ . '/layout_header.php';
                 <form method="POST" style="display:inline">
                   <input type="hidden" name="action" value="make_moderator"/>
                   <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-verify">🛡️ Mod</button>
+                  <button type="submit" class="btn-action btn-verify"><i class="fas fa-shield"></i> Mod</button>
                 </form>
               <?php elseif (isSuperAdmin() && $u['role'] === 'moderator'): ?>
                 <form method="POST" style="display:inline">
@@ -230,7 +230,7 @@ require_once __DIR__ . '/layout_header.php';
                 <form method="POST" style="display:inline" onsubmit="return confirm('Hapus permanen akun @<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>? Aksi ini tidak bisa dibatalkan.')">
                   <input type="hidden" name="action" value="delete"/>
                   <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-delete">🗑️</button>
+                  <button type="submit" class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
                 </form>
               <?php endif; ?>
             </div>
@@ -251,7 +251,7 @@ require_once __DIR__ . '/layout_header.php';
 <!-- Ban Modal -->
 <div id="ban-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
   <div style="background:white;border-radius:20px;padding:32px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-    <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">🚫 Ban Pengguna</h3>
+    <h3 style="font-size:18px;font-weight:700;margin-bottom:8px"><i class="fas fa-ban"></i> Ban Pengguna</h3>
     <p id="ban-modal-sub" style="font-size:14px;color:var(--body);margin-bottom:20px"></p>
     <form method="POST" id="ban-form">
       <input type="hidden" name="action" value="ban"/>

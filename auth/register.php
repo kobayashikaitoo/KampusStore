@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../functions/auth.php';
 
 redirectIfLoggedIn();
@@ -16,108 +17,27 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
   <title>Daftar — KampusStore</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="../assets/css/custom.css"/>
-  <style>
-    body { min-height: 100vh; display: flex; flex-direction: column; background: var(--surface); }
-    .auth-wrap {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 40px 16px;
-    }
-    .auth-card {
-      width: 100%; max-width: 460px;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(226,232,240,0.7);
-      border-radius: 24px; padding: 40px 36px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
-    }
-    @media(max-width:480px){.auth-card{padding:32px 20px;border-radius:20px}}
-    .auth-logo { text-align: center; margin-bottom: 24px; }
-    .auth-logo a { text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-    .auth-logo-text {
-      font-size: 22px; font-weight: 800; letter-spacing: -0.5px;
-      background: linear-gradient(135deg,#2563eb,#7c3aed);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .auth-title { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 4px; text-align: center; }
-    .auth-sub { font-size: 14px; color: var(--body); text-align: center; margin-bottom: 24px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media(max-width:400px){.form-grid{grid-template-columns:1fr}}
-    .form-group { margin-bottom: 16px; }
-    .form-group.full { grid-column: 1 / -1; }
-    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
-    .input-wrap { position: relative; }
-    .input-icon {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      font-size: 15px; pointer-events: none; color: var(--muted);
-    }
-    .form-input {
-      width: 100%; height: 46px;
-      background: white; border: 1.5px solid var(--hairline);
-      border-radius: 12px; padding: 0 14px 0 42px;
-      font-family: inherit; font-size: 14px; color: var(--ink);
-      transition: border-color .2s, box-shadow .2s; outline: none;
-    }
-    .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .form-input.is-error { border-color: #ef4444; }
-    .form-input.is-ok { border-color: #22c55e; }
-    .toggle-pw {
-      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; font-size: 15px;
-      color: var(--muted); padding: 0; transition: color .15s;
-    }
-    .toggle-pw:hover { color: var(--ink); }
-    .field-hint { font-size: 12px; margin-top: 4px; color: var(--muted); }
-    .field-hint.ok { color: #16a34a; }
-    .field-hint.err { color: #dc2626; }
-    .alert-error {
-      background: #fef2f2; border: 1px solid #fecaca;
-      border-radius: 12px; padding: 12px 16px;
-      font-size: 14px; color: #dc2626; margin-bottom: 18px;
-    }
-    .pw-strength { margin-top: 6px; }
-    .pw-bar {
-      height: 4px; border-radius: 2px; background: var(--hairline);
-      overflow: hidden; margin-bottom: 4px;
-    }
-    .pw-fill { height: 100%; border-radius: 2px; transition: width .3s, background .3s; width: 0; }
-    .pw-label { font-size: 11px; color: var(--muted); }
-    .btn-auth {
-      width: 100%; height: 50px;
-      background: var(--primary); color: white;
-      font-family: inherit; font-size: 15px; font-weight: 600;
-      border: none; border-radius: 12px; cursor: pointer;
-      transition: background .2s, transform .15s, box-shadow .2s;
-      margin-top: 4px;
-    }
-    .btn-auth:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,.3); }
-    .btn-auth:active { transform: translateY(0); }
-    .btn-auth:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-    .terms-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 12px; line-height: 1.6; }
-    .terms-note a { color: var(--primary); text-decoration: none; }
-    .auth-footer { text-align: center; margin-top: 18px; font-size: 14px; color: var(--body); }
-    .auth-footer a { color: var(--primary); font-weight: 600; text-decoration: none; }
-    .auth-footer a:hover { text-decoration: underline; }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/global.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/auth.css?v=2"/>
 </head>
-<body>
+<body class="auth-page">
 <div class="auth-wrap">
-  <div class="auth-card">
+  <div class="auth-card auth-card-wide">
     <div class="auth-logo">
-      <a href="/index.php">
-        <span style="font-size:24px">🏪</span>
+      <a href="../index.php">
+        <i class="fas fa-store" style="font-size:24px"></i>
         <span class="auth-logo-text">KampusStore</span>
       </a>
     </div>
     <h1 class="auth-title">Buat akun baru</h1>
-    <p class="auth-sub">Bergabung dengan komunitas kampus Indonesia 🎓</p>
+    <p class="auth-sub">Bergabung dengan komunitas kampus Indonesia</p>
 
     <?php if ($error): ?>
-      <div class="alert-error">⚠️ <?= htmlspecialchars($error) ?></div>
+      <div class="alert-error"><i class="fas fa-triangle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="process_register.php" id="reg-form">
+    <form method="POST" action="process_register.php" id="reg-form" class="register-form">
       <input type="hidden" name="csrf" value="<?= $_SESSION['csrf_token'] ?? (
         $_SESSION['csrf_token'] = bin2hex(random_bytes(16))
       ) ?>"/>
@@ -127,7 +47,6 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
         <div class="form-group">
           <label class="form-label" for="name">Nama Lengkap</label>
           <div class="input-wrap">
-            <span class="input-icon">📝</span>
             <input type="text" id="name" name="name" class="form-input"
               value="<?= htmlspecialchars($old['name'] ?? '') ?>"
               placeholder="Nama kamu" required autocomplete="name"/>
@@ -138,7 +57,7 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
         <div class="form-group">
           <label class="form-label" for="username">Username</label>
           <div class="input-wrap">
-            <span class="input-icon">@</span>
+            <span class="input-icon"><i class="fas fa-at"></i></span>
             <input type="text" id="username" name="username"
               class="form-input <?= isset($old['username']) ? 'is-error' : '' ?>"
               value="<?= htmlspecialchars($old['username'] ?? '') ?>"
@@ -150,11 +69,22 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
           <div class="field-hint" id="username-hint">Huruf, angka, dan _ saja (3–30 karakter)</div>
         </div>
 
+        <!-- Email Kampus -->
+        <div class="form-group">
+          <label class="form-label" for="email">Email Kampus</label>
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <input type="email" id="email" name="email" class="form-input"
+              value="<?= htmlspecialchars($old['email'] ?? '') ?>"
+              placeholder="nama@student.unsrat.ac.id" required autocomplete="email"/>
+          </div>
+          <div class="field-hint">Gunakan email @student.unsrat.ac.id</div>
+        </div>
+
         <!-- Campus -->
         <div class="form-group">
           <label class="form-label" for="campus">Kampus</label>
           <div class="input-wrap">
-            <span class="input-icon">🏛️</span>
             <input type="text" id="campus" name="campus" class="form-input"
               value="<?= htmlspecialchars($old['campus'] ?? '') ?>"
               placeholder="Nama universitas" autocomplete="organization"/>
@@ -165,7 +95,6 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
         <div class="form-group">
           <label class="form-label" for="faculty">Fakultas</label>
           <div class="input-wrap">
-            <span class="input-icon">🎓</span>
             <input type="text" id="faculty" name="faculty" class="form-input"
               value="<?= htmlspecialchars($old['faculty'] ?? '') ?>"
               placeholder="Fak. Teknik" autocomplete="off"/>
@@ -176,11 +105,10 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
         <div class="form-group">
           <label class="form-label" for="password">Password</label>
           <div class="input-wrap">
-            <span class="input-icon">🔒</span>
-            <input type="password" id="password" name="password" class="form-input"
+            <input type="password" id="password" name="password" class="form-input with-toggle"
               placeholder="Min. 8 karakter" required minlength="8"
               autocomplete="new-password" oninput="checkStrength(this.value)"/>
-            <button type="button" class="toggle-pw" onclick="togglePassword('password',this)" aria-label="Toggle">👁️</button>
+            <button type="button" class="toggle-pw" onclick="togglePassword('password',this)" aria-label="Toggle"><i class="fas fa-eye"></i></button>
           </div>
           <div class="pw-strength">
             <div class="pw-bar"><div class="pw-fill" id="pw-fill"></div></div>
@@ -192,19 +120,19 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
         <div class="form-group">
           <label class="form-label" for="password_confirm">Konfirmasi Password</label>
           <div class="input-wrap">
-            <span class="input-icon">🔑</span>
+            <span class="input-icon"><i class="fas fa-key"></i></span>
             <input type="password" id="password_confirm" name="password_confirm"
-              class="form-input" placeholder="Ulangi password" required
+              class="form-input with-toggle" placeholder="Ulangi password" required
               autocomplete="new-password" oninput="checkConfirm()"/>
-            <button type="button" class="toggle-pw" onclick="togglePassword('password_confirm',this)" aria-label="Toggle">👁️</button>
+            <button type="button" class="toggle-pw" onclick="togglePassword('password_confirm',this)" aria-label="Toggle"><i class="fas fa-eye"></i></button>
           </div>
           <div class="field-hint" id="confirm-hint"></div>
         </div>
       </div>
 
-      <button type="submit" class="btn-auth" id="reg-btn">Buat Akun 🎉</button>
+      <button type="submit" class="btn-auth" id="reg-btn">Buat Akun <i class="fas fa-party-popper"></i></button>
       <p class="terms-note">
-        Dengan mendaftar, kamu menyetujui <a href="#">Syarat &amp; Ketentuan</a> dan <a href="#">Kebijakan Privasi</a> KampusStore.
+        Dengan mendaftar, kamu menyetujui <a href="<?= BASE_URL ?>terms.php">Syarat &amp; Ketentuan</a> dan <a href="<?= BASE_URL ?>privacy.php">Kebijakan Privasi</a> KampusStore.
       </p>
     </form>
 
@@ -218,7 +146,7 @@ unset($_SESSION['auth_error'], $_SESSION['auth_old']);
 function togglePassword(id, btn) {
   const f = document.getElementById(id);
   f.type = f.type === 'password' ? 'text' : 'password';
-  btn.textContent = f.type === 'password' ? '👁️' : '🙈';
+  btn.innerHTML = f.type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
 }
 
 const usernames = new Set(); // client-side debounce cache
@@ -230,8 +158,8 @@ function checkUsername(input) {
   input.classList.toggle('is-ok', ok);
   input.classList.toggle('is-error', val.length > 0 && !ok);
   hint.className = 'field-hint ' + (ok ? 'ok' : (val.length > 0 ? 'err' : ''));
-  hint.textContent = ok
-    ? '✓ Username valid'
+  hint.innerHTML = ok
+    ? '<i class="fas fa-check"></i> Username valid'
     : val.length > 0
       ? 'Hanya huruf, angka, dan _ (3–30 karakter)'
       : 'Huruf, angka, dan _ saja (3–30 karakter)';
@@ -250,11 +178,11 @@ function checkStrength(pw) {
     1: {w:'25%',  bg:'#ef4444', t:'Lemah'},
     2: {w:'50%',  bg:'#f59e0b', t:'Cukup'},
     3: {w:'75%',  bg:'#3b82f6', t:'Kuat'},
-    4: {w:'100%', bg:'#22c55e', t:'Sangat kuat 💪'},
+    4: {w:'100%', bg:'#22c55e', t:'Sangat kuat <i class="fas fa-thumbs-up"></i>'},
   };
   fill.style.width = map[score].w;
   fill.style.background = map[score].bg;
-  label.textContent = map[score].t;
+  label.innerHTML = map[score].t;
   label.style.color = map[score].bg;
 }
 
@@ -262,13 +190,14 @@ function checkConfirm() {
   const pw  = document.getElementById('password').value;
   const cpw = document.getElementById('password_confirm').value;
   const el  = document.getElementById('confirm-hint');
-  if (!cpw) { el.textContent = ''; return; }
+  if (!cpw) { el.innerHTML = ''; return; }
   if (pw === cpw) {
-    el.className = 'field-hint ok'; el.textContent = '✓ Password cocok';
+    el.className = 'field-hint ok'; el.innerHTML = '<i class="fas fa-check"></i> Password cocok';
   } else {
-    el.className = 'field-hint err'; el.textContent = 'Password tidak cocok';
+    el.className = 'field-hint err'; el.innerHTML = 'Password tidak cocok';
   }
 }
+
 
 document.getElementById('reg-form').addEventListener('submit', function(e) {
   const pw  = document.getElementById('password').value;
@@ -284,5 +213,6 @@ document.getElementById('reg-form').addEventListener('submit', function(e) {
   btn.disabled = true;
 });
 </script>
+<script src="<?= BASE_URL ?>assets/js/main.js" defer></script>
 </body>
 </html>

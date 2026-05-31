@@ -11,11 +11,11 @@ $activeSort = $_GET['sort'] ?? 'terbaru';
 <div class="cat-strip-wrap">
   <div class="ks-container">
     <div class="cat-strip" id="cat-strip">
-      <button class="cat-tab <?= $activeCat==='semua' ? 'active' : '' ?>" data-cat="semua">🏪 Semua</button>
+      <button class="cat-tab <?= $activeCat==='semua' ? 'active' : '' ?>" data-cat="semua">Semua</button>
       <?php foreach ($categories as $cat): ?>
         <button class="cat-tab <?= $activeCat===$cat['slug'] ? 'active' : '' ?>"
           data-cat="<?= htmlspecialchars($cat['slug']) ?>">
-          <?= $cat['icon'] ?> <?= htmlspecialchars($cat['name']) ?>
+          <?= htmlspecialchars($cat['name']) ?>
         </button>
       <?php endforeach; ?>
     </div>

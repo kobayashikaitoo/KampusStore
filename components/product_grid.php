@@ -26,8 +26,7 @@ if ($catSlug && $catSlug !== 'semua') {
     $params[] = $catSlug;
 }
 if ($searchQ) {
-    $where[]  = '(p.title LIKE ? OR p.location LIKE ?)';
-    $params[] = "%$searchQ%";
+    $where[]  = 'p.title LIKE ?';
     $params[] = "%$searchQ%";
 }
 
@@ -56,8 +55,8 @@ $totalPages    = (int)ceil($totalProducts / $perPage);
 // ── Main query ─────────────────────────────────────────────────
 $stmt = $db->prepare("
     SELECT
-        p.id, p.title, p.price, p.is_nego, p.condition,
-        p.location, p.image, p.created_at, p.views,
+        p.id, p.title, p.price, p.is_nego, p.`condition`,
+        p.image, p.created_at, p.views, p.location,
         c.slug  AS cat_slug,
         u.id    AS seller_id,
         u.username AS seller_username,
@@ -105,19 +104,19 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
         <?php elseif ($catSlug && $catSlug !== 'semua'): ?>
           Kategori: <?= htmlspecialchars(ucfirst($catSlug)) ?>
         <?php else: ?>
-          Barang Terbaru 🔥
+          Barang Terbaru <i class="fas fa-fire" style="color:#ef4444"></i>
         <?php endif; ?>
       </h2>
       <div style="display:flex;align-items:center;gap:8px">
         <!-- Sort -->
         <select id="sort-select" class="filter-pill" style="cursor:pointer;padding:8px 14px"
           onchange="applySort(this.value)">
-          <option value="terbaru"    <?= $sortBy==='terbaru'    ? 'selected':'' ?>>✨ Terbaru</option>
-          <option value="termurah"   <?= $sortBy==='termurah'   ? 'selected':'' ?>>💰 Termurah</option>
-          <option value="termahal"   <?= $sortBy==='termahal'   ? 'selected':'' ?>>💎 Termahal</option>
-          <option value="terpopuler" <?= $sortBy==='terpopuler' ? 'selected':'' ?>>🔥 Terpopuler</option>
+          <option value="terbaru"    <?= $sortBy==='terbaru'    ? 'selected':'' ?>><i class="fas fa-star"></i> Terbaru</option>
+          <option value="termurah"   <?= $sortBy==='termurah'   ? 'selected':'' ?>><i class="fas fa-coins"></i> Termurah</option>
+          <option value="termahal"   <?= $sortBy==='termahal'   ? 'selected':'' ?>><i class="fas fa-gem"></i> Termahal</option>
+          <option value="terpopuler" <?= $sortBy==='terpopuler' ? 'selected':'' ?>><i class="fas fa-fire" style="color:#ef4444"></i> Terpopuler</option>
         </select>
-        <a href="/index.php" class="view-all" style="<?= ($catSlug==='semua'&&!$searchQ) ? 'display:none' : '' ?>">
+        <a href="index.php" class="view-all" style="<?= ($catSlug==='semua'&&!$searchQ) ? 'display:none' : '' ?>">
           Reset ✕
         </a>
       </div>
@@ -126,13 +125,13 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
     <?php if (empty($products)): ?>
       <!-- Empty State -->
       <div style="text-align:center;padding:80px 20px">
-        <div style="font-size:64px;margin-bottom:16px">📭</div>
+        <div style="font-size:64px;margin-bottom:16px"><i class="fas fa-inbox"></i></div>
         <h3 style="font-size:20px;font-weight:700;color:var(--ink);margin-bottom:8px">Belum ada barang</h3>
         <p style="font-size:14px;color:var(--body);margin-bottom:24px">
           <?= $searchQ ? 'Coba kata kunci lain atau hapus filter.' : 'Jadilah yang pertama jual di kategori ini!' ?>
         </p>
-        <a href="<?= isLoggedIn() ? '/sell.php' : '/auth/login.php' ?>" class="hero-btn-primary" style="display:inline-flex">
-          ➕ Jual Sekarang
+        <a href="<?= isLoggedIn() ? BASE_URL . 'sell.php' : BASE_URL . 'auth/login.php' ?>" class="hero-btn-primary" style="display:inline-flex">
+          <i class="fas fa-plus"></i> Jual Sekarang
         </a>
       </div>
 
@@ -143,7 +142,7 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
           $cond     = $condLabels[$p['condition']] ?? $condLabels['good'];
           $initials = strtoupper(mb_substr($p['seller_name'], 0, 1));
           $isSaved  = isset($wishlistSet[$p['id']]);
-          $imgSrc   = $p['image'] ? '/' . htmlspecialchars($p['image']) : '/assets/images/placeholder.png';
+          $imgSrc   = BASE_URL . htmlspecialchars(getProductImage($p['image']));
         ?>
         <article
           class="product-card anim-fiu <?= $delay ?>"
@@ -151,13 +150,13 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
           data-id="<?= (int)$p['id'] ?>"
         >
           <!-- Image -->
-          <a href="/product.php?id=<?= (int)$p['id'] ?>" class="card-img-wrap" style="display:block;text-decoration:none">
+          <a href="product.php?id=<?= (int)$p['id'] ?>" class="card-img-wrap" style="display:block;text-decoration:none">
             <img
               src="<?= $imgSrc ?>"
               alt="<?= htmlspecialchars($p['title']) ?>"
               class="card-img"
               loading="lazy"
-              onerror="this.src='/assets/images/placeholder.png'"
+              onerror="this.src='<?= BASE_URL ?>assets/images/placeholder.png'"
             />
             <!-- Condition Badge -->
             <span class="cond-badge <?= $cond['class'] ?>">
@@ -171,26 +170,20 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
             data-id="<?= (int)$p['id'] ?>"
             aria-label="Simpan ke wishlist"
             onclick="toggleWishlist(this)"
-          ><?= $isSaved ? '♥' : '♡' ?></button>
+          ><?= $isSaved ? '<i class="fas fa-heart" style="color:#dc2626"></i>' : '<i class="fas fa-heart"></i>' ?></button>
 
           <!-- Card Body -->
           <div class="card-body">
             <!-- Seller -->
             <div class="card-seller">
-              <a href="/seller.php?id=<?= (int)$p['seller_id'] ?>" style="display:flex;align-items:center;gap:6px;text-decoration:none;flex:1;min-width:0">
+              <a href="seller.php?id=<?= (int)$p['seller_id'] ?>" style="display:flex;align-items:center;gap:6px;text-decoration:none;flex:1;min-width:0">
                 <div class="seller-av"><?= $initials ?></div>
                 <span class="seller-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($p['seller_name']) ?></span>
               </a>
-              <?php if ($p['seller_verified']): ?>
-                <span class="seller-badge-v" title="Verified Student">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--primary)"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                  Verified
-                </span>
-              <?php endif; ?>
             </div>
 
             <!-- Title -->
-            <a href="/product.php?id=<?= (int)$p['id'] ?>" style="text-decoration:none">
+            <a href="product.php?id=<?= (int)$p['id'] ?>" style="text-decoration:none">
               <h3 class="card-title"><?= htmlspecialchars($p['title']) ?></h3>
             </a>
 
@@ -212,8 +205,8 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
 
             <!-- Actions -->
             <div class="card-actions">
-              <a href="/product.php?id=<?= (int)$p['id'] ?>" class="btn-add" style="text-decoration:none;justify-content:center">
-                👁️ Lihat Detail
+              <a href="product.php?id=<?= (int)$p['id'] ?>" class="btn-add" style="text-decoration:none;justify-content:center">
+                <i class="fas fa-eye"></i> Lihat Detail
               </a>
             </div>
           </div>

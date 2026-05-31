@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action    = $_POST['action']     ?? '';
     $productId = (int)($_POST['product_id'] ?? 0);
 
-    if (!$productId) { header('Location: products.php'); exit; }
+    if (!$productId) { header('Location: ' . BASE_URL . 'admin/products.php'); exit; }
 
     switch ($action) {
         case 'delete':
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_msg'] = 'Produk ditandai terjual.';
             break;
     }
-    header('Location: products.php'); exit;
+    header('Location: ' . BASE_URL . 'admin/products.php'); exit;
 }
 
 // ── Query products ───────────────────────────────────────────
@@ -77,7 +77,7 @@ if ($filterCat) {
 }
 
 $sql = '
-    SELECT p.*, u.username AS seller_username, c.name AS cat_name, c.icon AS cat_icon
+    SELECT p.*, u.username AS seller_username, c.name AS cat_name
     FROM products p
     JOIN users u ON p.seller_id = u.id
     JOIN categories c ON p.category_id = c.id
@@ -94,12 +94,12 @@ $pageTitle = 'Kelola Produk';
 require_once __DIR__ . '/layout_header.php';
 ?>
 
-<?php if ($msg): ?><div class="alert alert-success">✅ <?= htmlspecialchars($msg) ?></div><?php endif; ?>
-<?php if ($err): ?><div class="alert alert-error">⚠️ <?= htmlspecialchars($err) ?></div><?php endif; ?>
+<?php if ($msg): ?><div class="alert alert-success"><i class="fas fa-check"></i> <?= htmlspecialchars($msg) ?></div><?php endif; ?>
+<?php if ($err): ?><div class="alert alert-error"><i class="fas fa-triangle-exclamation"></i> <?= htmlspecialchars($err) ?></div><?php endif; ?>
 
 <div class="admin-card">
   <div class="admin-card-header">
-    <span class="admin-card-title">📦 Produk (<?= count($products) ?>)</span>
+    <span class="admin-card-title"><i class="fas fa-box"></i> Produk (<?= count($products) ?>)</span>
     <form method="GET" class="table-toolbar">
       <div class="search-box">
         <span>🔍</span>
@@ -107,14 +107,14 @@ require_once __DIR__ . '/layout_header.php';
       </div>
       <select name="status" class="filter-select" onchange="this.form.submit()">
         <option value="">Semua Status</option>
-        <option value="active"   <?= $filterStat==='active'   ? 'selected':'' ?>>✅ Aktif</option>
-        <option value="sold"     <?= $filterStat==='sold'     ? 'selected':'' ?>>🏷️ Terjual</option>
-        <option value="inactive" <?= $filterStat==='inactive' ? 'selected':'' ?>>⏸️ Nonaktif</option>
+        <option value="active"   <?= $filterStat==='active'   ? 'selected':'' ?>><i class="fas fa-check"></i> Aktif</option>
+        <option value="sold"     <?= $filterStat==='sold'     ? 'selected':'' ?>><i class="fas fa-tag"></i> Terjual</option>
+        <option value="inactive" <?= $filterStat==='inactive' ? 'selected':'' ?>><i class="fas fa-pause"></i> Nonaktif</option>
       </select>
       <select name="cat" class="filter-select" onchange="this.form.submit()">
         <option value="0">Semua Kategori</option>
         <?php foreach ($cats as $c): ?>
-          <option value="<?= $c['id'] ?>" <?= $filterCat==$c['id'] ? 'selected':'' ?>><?= $c['icon'] ?> <?= htmlspecialchars($c['name']) ?></option>
+          <option value="<?= $c['id'] ?>" <?= $filterCat==$c['id'] ? 'selected':'' ?>><?= htmlspecialchars($c['name']) ?></option>
         <?php endforeach; ?>
       </select>
       <button type="submit" class="btn-primary-sm">Filter</button>
@@ -134,7 +134,7 @@ require_once __DIR__ . '/layout_header.php';
             <?php if ($p['image']): ?>
               <img src="/<?= htmlspecialchars($p['image']) ?>" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" alt=""/>
             <?php else: ?>
-              <div style="width:40px;height:40px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📦</div>
+              <div style="width:40px;height:40px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0"><i class="fas fa-box"></i></div>
             <?php endif; ?>
             <div style="max-width:200px">
               <div style="font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($p['title']) ?></div>
@@ -143,11 +143,11 @@ require_once __DIR__ . '/layout_header.php';
           </div>
         </td>
         <td><span style="font-size:13px">@<?= htmlspecialchars($p['seller_username']) ?></span></td>
-        <td><span style="font-size:13px"><?= $p['cat_icon'] ?> <?= htmlspecialchars($p['cat_name']) ?></span></td>
+        <td><span style="font-size:13px">📦 <?= htmlspecialchars($p['cat_name']) ?></span></td>
         <td style="font-size:13px;font-weight:600">Rp <?= number_format($p['price'],0,',','.') ?></td>
         <td>
           <span class="badge badge-<?= $p['status'] ?>">
-            <?php $sl=['active'=>'✅ Aktif','sold'=>'🏷️ Terjual','inactive'=>'⏸️ Nonaktif']; echo $sl[$p['status']] ?? $p['status']; ?>
+            <?php $sl=['active'=>'<i class="fas fa-check"></i> Aktif','sold'=>'<i class="fas fa-tag"></i> Terjual','inactive'=>'<i class="fas fa-pause"></i> Nonaktif']; echo $sl[$p['status']] ?? $p['status']; ?>
           </span>
         </td>
         <td style="font-size:12px;color:var(--muted)"><?= date('d M Y', strtotime($p['created_at'])) ?></td>
@@ -157,24 +157,24 @@ require_once __DIR__ . '/layout_header.php';
               <form method="POST" style="display:inline">
                 <input type="hidden" name="action" value="deactivate"/>
                 <input type="hidden" name="product_id" value="<?= $p['id'] ?>"/>
-                <button type="submit" class="btn-action btn-ban">⏸️ Nonaktif</button>
+                <button type="submit" class="btn-action btn-ban"><i class="fas fa-pause"></i> Nonaktif</button>
               </form>
               <form method="POST" style="display:inline">
                 <input type="hidden" name="action" value="mark_sold"/>
                 <input type="hidden" name="product_id" value="<?= $p['id'] ?>"/>
-                <button type="submit" class="btn-action btn-verify">🏷️ Sold</button>
+                <button type="submit" class="btn-action btn-verify"><i class="fas fa-tag"></i> Sold</button>
               </form>
             <?php elseif ($p['status'] === 'inactive'): ?>
               <form method="POST" style="display:inline">
                 <input type="hidden" name="action" value="activate"/>
                 <input type="hidden" name="product_id" value="<?= $p['id'] ?>"/>
-                <button type="submit" class="btn-action btn-unban">✅ Aktifkan</button>
+                <button type="submit" class="btn-action btn-unban"><i class="fas fa-check"></i> Aktifkan</button>
               </form>
             <?php endif; ?>
             <form method="POST" style="display:inline" onsubmit="return confirm('Hapus produk ini permanen?')">
               <input type="hidden" name="action" value="delete"/>
               <input type="hidden" name="product_id" value="<?= $p['id'] ?>"/>
-              <button type="submit" class="btn-action btn-delete">🗑️ Hapus</button>
+              <button type="submit" class="btn-action btn-delete"><i class="fas fa-trash"></i> Hapus</button>
             </form>
           </div>
         </td>

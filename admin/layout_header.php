@@ -11,43 +11,11 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
   <title><?= htmlspecialchars($pageTitle) ?> — KampusStore Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/global.css"/>
+  <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin.css"/>
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#eff6ff;
-      --danger:#ef4444;--danger-light:#fef2f2;
-      --success:#22c55e;--success-light:#f0fdf4;
-      --warn:#f59e0b;--warn-light:#fffbeb;
-      --ink:#1e293b;--body:#64748b;--muted:#94a3b8;
-      --hairline:#e2e8f0;--surface:#f8fafc;--canvas:#fff;
-      --sidebar-w:240px;
-      --font:'Inter',system-ui,sans-serif;
-    }
-    html{-webkit-font-smoothing:antialiased}
-    body{font-family:var(--font);color:var(--ink);background:var(--surface);display:flex;min-height:100vh}
-
-    /* Sidebar */
-    .sidebar{
-      width:var(--sidebar-w);flex-shrink:0;
-      background:var(--ink);color:white;
-      display:flex;flex-direction:column;
-      position:fixed;top:0;left:0;bottom:0;
-      z-index:100;overflow-y:auto;
-    }
-    .sidebar-logo{
-      display:flex;align-items:center;gap:10px;
-      padding:20px 20px 16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      text-decoration:none;
-    }
-    .sidebar-logo-text{font-size:17px;font-weight:800;color:white;letter-spacing:-0.3px}
-    .sidebar-badge{
-      font-size:9px;font-weight:700;background:var(--danger);color:white;
-      padding:2px 6px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase;
-    }
-    .sidebar-section{padding:16px 12px 8px;font-size:10px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:0.8px;text-transform:uppercase}
-    .sidebar-link{
-      display:flex;align-items:center;gap:10px;
+    .sidebar-link {
       padding:10px 12px;margin:1px 8px;
       border-radius:8px;text-decoration:none;
       color:rgba(255,255,255,.7);font-size:14px;font-weight:500;
@@ -69,7 +37,7 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
     .sidebar-logout:hover{background:rgba(239,68,68,.15);color:#f87171}
 
     /* Main */
-    .admin-main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .admin-main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
     .admin-topbar{
       background:white;border-bottom:1px solid var(--hairline);
       padding:0 28px;height:60px;
@@ -166,37 +134,37 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
     }
   </style>
 </head>
-<body>
+<body class="admin-page">
 
 <!-- Sidebar -->
 <aside class="sidebar">
-  <a href="/admin/" class="sidebar-logo">
+  <a href="./" class="sidebar-logo">
     <span style="font-size:20px">🏪</span>
     <span class="sidebar-logo-text">KampusStore</span>
     <span class="sidebar-badge">Admin</span>
   </a>
 
   <div class="sidebar-section">Overview</div>
-  <a href="/admin/" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'index.php' && dirname($_SERVER['PHP_SELF']) !== '/' ? 'active' : '' ?>">
-    <span>📊</span> Dashboard
+  <a href="./" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'index.php' && dirname($_SERVER['PHP_SELF']) !== '/' ? 'active' : '' ?>">
+    <span><i class="fas fa-chart-line"></i></span> Dashboard
   </a>
 
   <div class="sidebar-section">Manajemen</div>
-  <a href="/admin/users.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'users.php' ? 'active' : '' ?>">
+  <a href="users.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'users.php' ? 'active' : '' ?>">
     <span>👥</span> Kelola Pengguna
   </a>
-  <a href="/admin/products.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'products.php' ? 'active' : '' ?>">
-    <span>📦</span> Kelola Produk
+  <a href="products.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'products.php' ? 'active' : '' ?>">
+    <span><i class="fas fa-box"></i></span> Kelola Produk
   </a>
-  <a href="/admin/reports.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'reports.php' ? 'active' : '' ?>">
-    <span>🚩</span> Laporan
+  <a href="reports.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'reports.php' ? 'active' : '' ?>">
+    <span><i class="fas fa-flag"></i></span> Laporan
   </a>
-  <a href="/admin/logs.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'logs.php' ? 'active' : '' ?>">
+  <a href="logs.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'logs.php' ? 'active' : '' ?>">
     <span>📋</span> Activity Log
   </a>
 
   <div class="sidebar-section">Sistem</div>
-  <a href="/index.php" class="sidebar-link">
+  <a href="../index.php" class="sidebar-link">
     <span>🌐</span> Lihat Situs
   </a>
 
@@ -208,7 +176,7 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
         <div class="sidebar-role"><?= ucfirst($_SESSION['role'] ?? 'admin') ?></div>
       </div>
     </div>
-    <a href="/auth/logout.php" class="sidebar-logout">🚪 Keluar</a>
+    <a href="../auth/logout.php" class="sidebar-logout"><i class="fas fa-door-open"></i> Keluar</a>
   </div>
 </aside>
 
@@ -219,7 +187,7 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
       <div class="topbar-title"><?= htmlspecialchars($pageTitle) ?></div>
     </div>
     <div class="topbar-right">
-      <span style="font-size:13px;color:var(--muted)">👤 <?= htmlspecialchars($_SESSION['username'] ?? '') ?></span>
+      <span style="font-size:13px;color:var(--muted)"><i class="fas fa-user"></i> <?= htmlspecialchars($_SESSION['username'] ?? '') ?></span>
     </div>
   </div>
   <div class="admin-content">

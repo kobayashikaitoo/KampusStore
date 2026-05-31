@@ -1,0 +1,384 @@
+/* ── Forgot Password Page ── */
+.forgot-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.forgot-card {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 24px;
+  border: 1px solid var(--hairline);
+  padding: 32px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.forgot-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #ef4444;
+}
+
+.forgot-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.forgot-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.forgot-form-group {
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.forgot-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.forgot-input {
+  width: 100%;
+  border: 1.5px solid var(--hairline);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: white;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.forgot-input:focus {
+  border-color: var(--primary);
+}
+
+.btn-submit-forgot {
+  width: 100%;
+  height: 46px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  margin-bottom: 16px;
+}
+
+.btn-submit-forgot:hover {
+  background: var(--primary-dark);
+}
+
+.btn-back-forgot {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  display: block;
+}
+
+.btn-back-forgot:hover {
+  color: var(--ink);
+}
+
+/* ── How to Sell / Guide Pages ── */
+.guide-wrap {
+  max-width: 700px;
+  margin: 48px auto;
+  padding: 0 24px 80px;
+}
+
+.guide-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.guide-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+
+.guide-sub {
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── Step Cards ── */
+.step-card {
+  background: white;
+  border: 1px solid var(--hairline);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+  transition: box-shadow .2s, transform .15s;
+}
+
+.step-card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.step-num {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.step-desc {
+  font-size: 15px;
+  color: var(--body);
+  line-height: 1.6;
+}
+
+@media(max-width: 600px) {
+  .step-card {
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+  }
+  
+  .step-card:nth-child(even) .step-num {
+    order: -1;
+  }
+}
+
+/* ── Step List ── */
+.step-list {
+  list-style: none;
+  margin-top: 12px;
+  padding-left: 0;
+}
+
+.step-list li {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--body);
+  line-height: 1.5;
+}
+
+.step-list li::before {
+  content: '✓';
+  color: var(--primary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── CTA Box ── */
+.cta-box {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border-radius: 24px;
+  padding: 40px 24px;
+  text-align: center;
+  color: white;
+  margin-top: 48px;
+  box-shadow: var(--shadow-blue);
+}
+
+.cta-box h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.cta-box p {
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: .95;
+  margin-bottom: 24px;
+}
+
+.btn-white {
+  display: inline-block;
+  padding: 12px 32px;
+  background: white;
+  color: #2563eb;
+  font-weight: 700;
+  border-radius: 999px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.btn-white:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Info Box ── */
+.info-box {
+  background: var(--primary-light);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.info-icon {
+  font-size: 20px;
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.info-text {
+  font-size: 14px;
+  color: var(--body);
+  line-height: 1.6;
+}
+
+.info-text strong {
+  color: var(--ink);
+}
+
+/* ── Alert Box ── */
+.alert-box {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.alert-icon {
+  font-size: 20px;
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alert-text {
+  font-size: 14px;
+  color: var(--body);
+  line-height: 1.6;
+}
+
+.alert-text strong {
+  color: var(--ink);
+}
+
+/* ── FAQ / Accordion ── */
+.faq-item {
+  background: white;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.faq-q {
+  padding: 16px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: background .2s;
+}
+
+.faq-q:hover {
+  background: var(--surface);
+}
+
+.faq-q-text {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.faq-q-icon {
+  font-size: 18px;
+  color: var(--muted);
+  transition: transform .2s;
+}
+
+.faq-item.open .faq-q-icon {
+  transform: rotate(180deg);
+}
+
+.faq-a {
+  display: none;
+  padding: 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--hairline);
+  font-size: 14px;
+  color: var(--body);
+  line-height: 1.6;
+}
+
+.faq-item.open .faq-a {
+  display: block;
+}
+
+/* ── Responsive ── */
+@media(max-width: 600px) {
+  .guide-title {
+    font-size: 24px;
+  }
+  
+  .guide-sub {
+    font-size: 14px;
+  }
+  
+  .cta-box {
+    padding: 32px 20px;
+  }
+  
+  .cta-box h2 {
+    font-size: 20px;
+  }
+}

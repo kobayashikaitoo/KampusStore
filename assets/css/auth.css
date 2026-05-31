@@ -1,0 +1,102 @@
+/* ── Auth Page Layout ── */
+body.auth-page{min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%)}
+.auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:56px 16px}
+.auth-card{width:100%;max-width:560px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid #e5e7eb;border-radius:24px;padding:44px 40px;box-shadow:0 10px 30px rgba(0,0,0,0.06)}
+.auth-card-wide{max-width:640px}
+@media(max-width:480px){.auth-card{padding:32px 24px;border-radius:20px}}
+
+/* ── Auth Header ── */
+.auth-logo{text-align:center;margin-bottom:16px}
+.auth-logo a{text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.auth-logo-text{font-size:22px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-title{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px;text-align:center}
+.auth-sub{font-size:14px;color:var(--body);text-align:center;margin-bottom:24px}
+
+/* ── Auth Form Elements ── */
+.input-wrap{position:relative}
+.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;color:var(--muted)}
+.form-input{width:100%;height:50px;background:white;border:1.5px solid var(--hairline);border-radius:12px;padding:0 44px 0 42px;font-family:inherit;font-size:15px;color:var(--ink);transition:border-color .2s,box-shadow .2s;outline:none}
+.form-input.with-toggle{padding-right:56px}
+.register-form .form-input.with-toggle{padding-right:62px}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.form-input.error{border-color:#ef4444}
+.form-input.error:focus{box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
+.toggle-pw{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:0;line-height:1;transition:color .15s}
+.toggle-pw:hover{color:var(--ink)}
+
+/* ── Auth Buttons ── */
+.btn-auth{width:100%;height:50px;background:var(--primary);color:white;font-family:inherit;font-size:15px;font-weight:600;border:none;border-radius:12px;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;margin-top:4px}
+.btn-auth:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 8px 20px rgba(37,99,235,.25)}
+.btn-auth:active{transform:translateY(0)}
+.btn-auth.loading{opacity:.7;cursor:not-allowed}
+
+/* ── Alerts ── */
+.alert-error{
+  background:#fef2f2;border:1px solid #fecaca;
+  border-radius:12px;padding:12px 16px;
+  font-size:14px;color:#dc2626;margin-bottom:20px;
+  display:flex;align-items:center;gap:8px;
+}
+.alert-success{
+  background:#f0fdf4;border:1px solid #bbf7d0;
+  border-radius:12px;padding:12px 16px;
+  font-size:14px;color:#16a34a;margin-bottom:20px;
+  display:flex;align-items:center;gap:8px;
+}
+
+/* ── Auth Divider ── */
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:13px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--hairline)}
+
+/* ── Auth Footer ── */
+.auth-footer{text-align:center;margin-top:20px;font-size:14px;color:var(--body)}
+.auth-footer a{color:var(--primary);font-weight:600;text-decoration:none}
+.auth-footer a:hover{text-decoration:underline}
+
+/* ── Terms Note ── */
+.terms-note{
+  text-align:center;
+  font-size:12px;
+  color:#94a3b8;
+  line-height:1.4;
+  margin-top:10px;
+}
+.terms-note a{
+  color:#94a3b8;
+  font-weight:600;
+  text-decoration:none;
+}
+.terms-note a:hover{
+  color:var(--primary);
+}
+
+/* ── Helper Text ── */
+.field-hint{
+  font-size:12px;
+  color:#94a3b8;
+  line-height:1.4;
+  margin-top:6px;
+}
+.field-hint.ok{color:#16a34a}
+.field-hint.err{color:#dc2626}
+
+/* ── Password Strength ── */
+.pw-strength{margin-top:6px}
+.pw-bar{width:100%;height:6px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-bottom:6px}
+.pw-fill{height:100%;width:0;background:#e2e8f0;transition:width .2s,background .2s}
+.pw-label{font-size:12px;color:#94a3b8;line-height:1.4}
+
+/* ── Username Hint (Real-time Validation) ── */
+.username-hint{font-size:12px;color:var(--muted);margin-top:5px}
+.username-hint.ok{color:#16a34a}
+.username-hint.err{color:#dc2626}
+
+/* ── Form Spacing ── */
+.auth-page .form-grid{gap:20px}
+.auth-page .form-group{margin-bottom:18px}
+.register-form .form-grid{grid-template-columns:1fr !important;gap:18px}
+.register-form .form-group{margin-bottom:20px}
+
+@media(max-width:480px){
+  .auth-card{padding:32px 24px;border-radius:20px}
+}

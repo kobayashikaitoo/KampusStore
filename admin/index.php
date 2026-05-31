@@ -27,44 +27,44 @@ require_once __DIR__ . '/layout_header.php';
 ?>
 
 <?php if ($msg): ?>
-  <div class="alert alert-success">✅ <?= htmlspecialchars($msg) ?></div>
+  <div class="alert alert-success"><i class="fas fa-check"></i> <?= htmlspecialchars($msg) ?></div>
 <?php endif; ?>
 
 <!-- Stat Cards -->
 <div class="stat-grid">
   <div class="stat-card">
     <div class="stat-card-accent" style="background:#2563eb"></div>
-    <div class="stat-card-icon">👥</div>
+    <div class="stat-card-icon"><i class="fas fa-users"></i></div>
     <div class="stat-card-num"><?= $stats['total_users'] ?></div>
     <div class="stat-card-label">Total Pengguna</div>
   </div>
   <div class="stat-card">
     <div class="stat-card-accent" style="background:#ef4444"></div>
-    <div class="stat-card-icon">🚫</div>
+    <div class="stat-card-icon"><i class="fas fa-ban"></i></div>
     <div class="stat-card-num"><?= $stats['banned_users'] ?></div>
     <div class="stat-card-label">Akun Dibanned</div>
   </div>
   <div class="stat-card">
     <div class="stat-card-accent" style="background:#22c55e"></div>
-    <div class="stat-card-icon">📦</div>
+    <div class="stat-card-icon"><i class="fas fa-box"></i></div>
     <div class="stat-card-num"><?= $stats['active_products'] ?></div>
     <div class="stat-card-label">Produk Aktif</div>
   </div>
   <div class="stat-card">
     <div class="stat-card-accent" style="background:#f59e0b"></div>
-    <div class="stat-card-icon">✅</div>
+    <div class="stat-card-icon"><i class="fas fa-check"></i></div>
     <div class="stat-card-num"><?= $stats['sold_products'] ?></div>
     <div class="stat-card-label">Produk Terjual</div>
   </div>
   <div class="stat-card">
     <div class="stat-card-accent" style="background:#7c3aed"></div>
-    <div class="stat-card-icon">♡</div>
+    <div class="stat-card-icon"><i class="fas fa-heart"></i></div>
     <div class="stat-card-num"><?= $stats['total_wishlists'] ?></div>
     <div class="stat-card-label">Total Wishlist</div>
   </div>
   <div class="stat-card">
     <div class="stat-card-accent" style="background:#0891b2"></div>
-    <div class="stat-card-icon">📝</div>
+    <div class="stat-card-icon"><i class="fas fa-pen"></i></div>
     <div class="stat-card-num"><?= $stats['total_products'] ?></div>
     <div class="stat-card-label">Total Produk</div>
   </div>
@@ -76,7 +76,7 @@ require_once __DIR__ . '/layout_header.php';
   <div class="admin-card">
     <div class="admin-card-header">
       <span class="admin-card-title">👥 Pengguna Terbaru</span>
-      <a href="/admin/users.php" class="btn-primary-sm">Lihat semua →</a>
+      <a href="users.php" class="btn-primary-sm">Lihat semua →</a>
     </div>
     <table class="admin-table">
       <thead><tr><th>Pengguna</th><th>Role</th><th>Status</th></tr></thead>
@@ -94,12 +94,12 @@ require_once __DIR__ . '/layout_header.php';
           </td>
           <td>
             <span class="badge badge-<?= $u['role'] ?>">
-              <?= $u['role'] === 'admin' ? '⚡ Admin' : ($u['role'] === 'moderator' ? '🛡️ Mod' : '👤 User') ?>
+              <?= $u['role'] === 'admin' ? '<i class="fas fa-bolt"></i> Admin' : ($u['role'] === 'moderator' ? '<i class="fas fa-shield"></i> Mod' : '<i class="fas fa-user"></i> User') ?>
             </span>
           </td>
           <td>
             <span class="badge <?= $u['is_banned'] ? 'badge-banned' : 'badge-active' ?>">
-              <?= $u['is_banned'] ? '🚫 Banned' : '✅ Aktif' ?>
+              <?= $u['is_banned'] ? '<i class="fas fa-ban"></i> Banned' : '<i class="fas fa-check"></i> Aktif' ?>
             </span>
           </td>
         </tr>
@@ -114,8 +114,8 @@ require_once __DIR__ . '/layout_header.php';
   <!-- Recent Products -->
   <div class="admin-card">
     <div class="admin-card-header">
-      <span class="admin-card-title">📦 Produk Terbaru</span>
-      <a href="/admin/products.php" class="btn-primary-sm">Lihat semua →</a>
+      <span class="admin-card-title"><i class="fas fa-box"></i> Produk Terbaru</span>
+      <a href="products.php" class="btn-primary-sm">Lihat semua →</a>
     </div>
     <table class="admin-table">
       <thead><tr><th>Produk</th><th>Harga</th><th>Status</th></tr></thead>
@@ -130,7 +130,7 @@ require_once __DIR__ . '/layout_header.php';
           <td>
             <span class="badge badge-<?= $p['status'] ?>">
               <?php
-                $labels = ['active'=>'✅ Aktif','sold'=>'🏷️ Terjual','inactive'=>'⏸️ Nonaktif'];
+                $labels = ['active'=>'<i class="fas fa-check"></i> Aktif','sold'=>'<i class="fas fa-tag"></i> Terjual','inactive'=>'<i class="fas fa-pause"></i> Nonaktif'];
                 echo $labels[$p['status']] ?? $p['status'];
               ?>
             </span>
