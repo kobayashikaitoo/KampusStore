@@ -91,9 +91,52 @@
 .view-all:hover{gap:8px}
 
 /* ── Category Strip ── */
-.cat-strip-wrap{background:white;border-bottom:1px solid var(--hairline);position:sticky;top:68px;z-index:50;padding:14px 0}
-.cat-strip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
-.cat-strip::-webkit-scrollbar{display:none}
+.cat-strip-wrap {
+  background: white;
+  border-bottom: 1px solid var(--hairline);
+  position: sticky;
+  top: 68px;
+  z-index: 50;
+  padding: 14px 0;
+}
+/* Efek Memudar (Gradients) di Kiri & Kanan */
+.cat-strip-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40px; height: 100%;
+  background: linear-gradient(to right, white, rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: 2;
+}
+.cat-strip-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 40px; height: 100%;
+  background: linear-gradient(to left, white, rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: 2;
+}
+.cat-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cat-strip::-webkit-scrollbar {
+  display: none;
+}
+@media(max-width: 640px) {
+  .cat-strip {
+    padding: 2px 16px;
+  }
+}
 .cat-tab{
   display:inline-flex;align-items:center;gap:7px;
   padding:9px 18px;border-radius:var(--radius-pill);
