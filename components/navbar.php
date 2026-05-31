@@ -17,7 +17,7 @@ $navUser = currentUser();
       <span class="nav-logo-text">KampusStore</span>
     </a>
 
-    <!-- Search -->
+    <!-- Search (Desktop) -->
     <div class="nav-search">
       <input type="text" id="nav-search-input" placeholder="Cari buku, laptop, kos…" autocomplete="off"/>
       <button class="search-btn" id="nav-search-btn" aria-label="Cari">
@@ -88,25 +88,113 @@ $navUser = currentUser();
         </div>
       <?php else: ?>
         <!-- Not logged in — always visible -->
-        <a href="auth/login.php" class="btn-login">
+        <a href="auth/login.php" class="btn-login btn-nav-login">
           <i class="fas fa-user"></i>
           <span class="nav-links-hide" style="display:inline">Masuk</span>
         </a>
-        <a href="auth/register.php" class="btn-sell" style="background:transparent;color:var(--primary);border:1.5px solid var(--primary);" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background='transparent'">
+        <a href="auth/register.php" class="btn-sell btn-nav-register" style="background:transparent;color:var(--primary);border:1.5px solid var(--primary);" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background='transparent'">
           <i class="fas fa-user-plus"></i>
           <span class="nav-links-hide" style="display:inline">Daftar</span>
         </a>
       <?php endif; ?>
 
+      <!-- Hamburger Menu Button -->
+      <button class="btn-burger" id="btn-burger" onclick="toggleMobileMenu()" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
     </div>
   </div>
 </nav>
 
+<!-- Mobile Drawer Overlay -->
+<div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
+
+<!-- Mobile Drawer -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="drawer-header">
+    <span class="drawer-title"><i class="fas fa-store" style="color:var(--primary)"></i> KampusStore</span>
+    <button class="btn-close-drawer" onclick="toggleMobileMenu()" aria-label="Tutup Menu">&times;</button>
+  </div>
+  
+  <div class="drawer-body">
+    <!-- Mobile Search -->
+    <div class="mobile-search">
+      <input type="text" id="mobile-search-input" placeholder="Cari barang..." autocomplete="off"/>
+      <button class="mobile-search-btn" id="mobile-search-btn" aria-label="Cari">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="drawer-links">
+      <a href="index.php"><i class="fas fa-home"></i> Halaman Utama</a>
+      <a href="team.php"><i class="fas fa-users"></i> Tim Kami</a>
+      <a href="how-to-sell.php"><i class="fas fa-info-circle"></i> Cara Menjual</a>
+      <a href="privacy.php"><i class="fas fa-shield-alt"></i> Kebijakan Privasi</a>
+      <a href="terms.php"><i class="fas fa-file-contract"></i> Ketentuan Layanan</a>
+    </div>
+
+    <hr class="drawer-divider" />
+
+    <!-- User Profile Links / Auth in Drawer -->
+    <div class="drawer-user-section">
+      <?php if ($navUser): ?>
+        <div class="drawer-user-info">
+          <div class="drawer-avatar">
+            <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
+          </div>
+          <div>
+            <div class="drawer-name"><?= htmlspecialchars($navUser['name']) ?></div>
+            <div class="drawer-username">@<?= htmlspecialchars($navUser['username']) ?></div>
+          </div>
+        </div>
+        
+        <div class="drawer-links" style="margin-top: 10px;">
+          <a href="profile.php"><i class="fas fa-user-circle"></i> Profil Saya</a>
+          <a href="my-listings.php"><i class="fas fa-tags"></i> Barang Saya</a>
+          <a href="wishlist.php"><i class="fas fa-heart"></i> Wishlist Saya</a>
+          <?php if ($navUser['role'] === 'admin'): ?>
+            <a href="admin/" style="color:#d97706"><i class="fas fa-cog"></i> Panel Admin</a>
+          <?php endif; ?>
+          <a href="auth/logout.php" style="color:#dc2626"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+        </div>
+      <?php else: ?>
+        <div class="drawer-auth-buttons">
+          <a href="auth/login.php" class="btn-drawer-login">Masuk</a>
+          <a href="auth/register.php" class="btn-drawer-register">Daftar Baru</a>
+        </div>
+      <?php endif; ?>
+    </div>
+  </div>
+</div>
+
 <script>
 function toggleUserMenu() {
   const dd = document.getElementById('user-dropdown');
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
 }
+
+function toggleMobileMenu() {
+  const drawer = document.getElementById('mobile-drawer');
+  const overlay = document.getElementById('mobile-overlay');
+  const burger = document.getElementById('btn-burger');
+  
+  if (drawer && overlay && burger) {
+    drawer.classList.toggle('active');
+    overlay.classList.toggle('active');
+    burger.classList.toggle('active');
+    
+    if (drawer.classList.contains('active')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+}
+
 // Tutup dropdown saat klik di luar
 document.addEventListener('click', function(e) {
   const wrap = document.getElementById('user-menu-wrap');
@@ -115,4 +203,27 @@ document.addEventListener('click', function(e) {
     if (dd) dd.style.display = 'none';
   }
 });
+
+// Mobile Search Logic
+function doMobileSearch() {
+  const q = (document.getElementById('mobile-search-input')?.value || '').trim();
+  if (!q) return;
+  const url = new URL(window.BASE_URL + 'index.php', window.location.origin);
+  url.searchParams.set('q', q);
+  window.location.href = url.toString();
+}
+
+document.getElementById('mobile-search-btn')?.addEventListener('click', doMobileSearch);
+document.getElementById('mobile-search-input')?.addEventListener('keydown', e => { 
+  if (e.key === 'Enter') doMobileSearch(); 
+});
+
+// Pre-fill mobile search input from URL on page load
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q');
+  const mobSearchInput = document.getElementById('mobile-search-input');
+  if (q && mobSearchInput) mobSearchInput.value = q;
+})();
 </script>
+

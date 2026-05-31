@@ -83,19 +83,267 @@
 }
 .btn-login:hover{border-color:var(--ink);background:var(--surface)}
 
-/* ── Mobile Only ── */
-.nav-mobile-only{display:none}
-@media(max-width:480px){
-  .nav-mobile-only{display:inline}
-  .btn-sell span{display:none}
-  .btn-login span:first-child{display:none}
+/* ── Hamburger Menu Button ── */
+.btn-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 20px;
+  height: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001;
+  margin-left: 8px;
+}
+.btn-burger span {
+  width: 100%;
+  height: 2px;
+  background-color: var(--ink);
+  border-radius: 2px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+.btn-burger.active span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.btn-burger.active span:nth-child(2) {
+  opacity: 0;
+}
+.btn-burger.active span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
 }
 
-/* ── Responsive ── */
+/* ── Mobile Overlay ── */
+.mobile-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.mobile-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Mobile Drawer ── */
+.mobile-drawer {
+  position: fixed;
+  top: 0; right: -320px;
+  width: 300px; height: 100%;
+  background: white;
+  box-shadow: -10px 0 40px rgba(0,0,0,0.08);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mobile-drawer.active {
+  right: 0;
+}
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 16px;
+}
+.drawer-title {
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+.btn-close-drawer {
+  background: var(--surface);
+  border: none;
+  font-size: 24px;
+  font-weight: 300;
+  cursor: pointer;
+  color: var(--muted);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, color .2s;
+}
+.btn-close-drawer:hover {
+  background: var(--hairline);
+  color: var(--ink);
+}
+
+/* ── Drawer Body ── */
+.drawer-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.mobile-search {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1.5px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  height: 44px;
+  padding: 0 4px 0 16px;
+  margin-bottom: 20px;
+  transition: border-color .2s;
+}
+.mobile-search:focus-within {
+  border-color: var(--primary);
+}
+.mobile-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: transparent;
+}
+.mobile-search-btn {
+  width: 36px; height: 36px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.mobile-search-btn:hover {
+  background: var(--primary-dark);
+}
+.drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.drawer-links a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: var(--body);
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: background .2s, color .2s, transform .2s;
+}
+.drawer-links a:hover {
+  background: var(--surface);
+  color: var(--ink);
+  transform: translateX(4px);
+}
+.drawer-links a i {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  color: var(--primary);
+}
+.drawer-divider {
+  border: 0;
+  height: 1px;
+  background: var(--hairline);
+  margin: 20px 0;
+}
+
+/* ── User section in Drawer ── */
+.drawer-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--primary-light);
+  border: 1px solid rgba(37,99,235,0.1);
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+.drawer-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#2563eb,#7c3aed);
+  color: white;
+  font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.drawer-name {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+}
+.drawer-username {
+  font-size: 11px; color: var(--primary); font-weight: 500;
+}
+.drawer-auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn-drawer-login {
+  display: flex; align-items: center; justify-content: center;
+  height: 44px; border-radius: 12px;
+  border: 1.5px solid var(--hairline);
+  text-decoration: none; font-weight: 600; font-size: 14px;
+  color: var(--ink); transition: background .2s;
+}
+.btn-drawer-login:hover { background: var(--surface) }
+.btn-drawer-register {
+  display: flex; align-items: center; justify-content: center;
+  height: 44px; border-radius: 12px;
+  background: var(--primary);
+  text-decoration: none; font-weight: 600; font-size: 14px;
+  color: white; transition: background .2s;
+}
+.btn-drawer-register:hover { background: var(--primary-dark) }
+
+/* ── Responsive Queries ── */
 @media(max-width:768px){
-  .nav-links-hide{display:none}
-  .cart-btn{width:36px;height:36px;font-size:16px}
+  .nav-inner {
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .nav-search {
+    display: none !important;
+  }
+  .nav-links-hide {
+    display: none !important;
+  }
+  .btn-burger {
+    display: flex;
+  }
+  .btn-nav-login,
+  .btn-nav-register,
+  #user-menu-wrap {
+    display: none !important;
+  }
+  .btn-sell span {
+    display: none;
+  }
+  .btn-sell {
+    padding: 10px;
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    justify-content: center;
+  }
+  .btn-sell svg {
+    margin: 0;
+  }
+  .cart-btn {
+    width: 40px; height: 40px;
+  }
 }
-
-/* ── Cart Animation ── */
-.cart-btn.shake{animation:cartShake .5s ease}
+@media(max-width:480px){
+  .nav-logo-text {
+    font-size: 18px;
+  }
+}
