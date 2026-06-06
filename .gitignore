@@ -1,3 +1,18 @@
+# Ignore local config containing credentials
+/config/db.php
+
+# Ignore uploaded images and large assets
+/assets/images/uploads/
+/assets/images/banners/
+/assets/images/avatars/
+
+# Common ignores
+node_modules/
+vendor/
+.env
+.DS_Store
+.vscode/
+*.log
 # OS generated files
 .DS_Store
 .DS_Store?
