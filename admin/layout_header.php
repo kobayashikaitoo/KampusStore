@@ -308,6 +308,9 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
   <a href="products.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'products.php' ? 'active' : '' ?>">
     <span><i class="fas fa-box"></i></span> Kelola Produk
   </a>
+  <a href="categories.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'categories.php' ? 'active' : '' ?>">
+    <span><i class="fas fa-layer-group"></i></span> Kelola Kategori
+  </a>
   <a href="reports.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'reports.php' ? 'active' : '' ?>">
     <span><i class="fas fa-flag"></i></span> Laporan
   </a>

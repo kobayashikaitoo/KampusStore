@@ -94,7 +94,7 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $products = $stmt->fetchAll();
 
-$cats = $db->query('SELECT * FROM categories ORDER BY name')->fetchAll();
+$cats = $db->query('SELECT * FROM categories ORDER BY order_index ASC')->fetchAll();
 
 $pageTitle = 'Kelola Produk';
 require_once __DIR__ . '/layout_header.php';

@@ -12,9 +12,9 @@ $error = $_SESSION['sell_error'] ?? null;
 $old   = $_SESSION['sell_old']   ?? [];
 unset($_SESSION['sell_error'], $_SESSION['sell_old']);
 
-// Ambil kategori dari DB
+// Ambil kategori dari DB (berdasarkan order_index)
 $db   = getDB();
-$cats = $db->query('SELECT * FROM categories ORDER BY name')->fetchAll();
+$cats = $db->query('SELECT * FROM categories ORDER BY order_index ASC')->fetchAll();
 
 // Check if user has WhatsApp number
 $userStmt = $db->prepare('SELECT whatsapp_number FROM users WHERE id = ?');
