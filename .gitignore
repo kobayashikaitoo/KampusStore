@@ -1,19 +1,40 @@
-# Ignore local config containing credentials
-/config/db.php
-
-# Ignore uploaded images and large assets
-/assets/images/uploads/
-/assets/images/banners/
-/assets/images/avatars/
-
-# Common ignores
-node_modules/
-vendor/
+# ================================
+# SECURITY: Database & Credentials
+# ================================
+config/db.php
 .env
-.DS_Store
-.vscode/
+.env.local
+.env.*.local
+
+# ================================
+# USER UPLOADS & ASSETS
+# ================================
+# Keep folder structure but ignore uploaded files
+assets/images/uploads/*
+!assets/images/uploads/.gitkeep
+assets/images/banners/*
+!assets/images/banners/.gitkeep
+assets/images/avatars/*
+!assets/images/avatars/.gitkeep
+
+# ================================
+# BACKUP & TEMPORARY FILES
+# ================================
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.bak
+*.backup
+*.tmp
+*.swp
+*.swo
 *.log
-# OS generated files
+*.sql
+
+# ================================
+# OS GENERATED FILES
+# ================================
 .DS_Store
 .DS_Store?
 ._*
@@ -21,19 +42,25 @@ vendor/
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# IDE / Editor
-.idea/
+# ================================
+# IDE / EDITOR
+# ================================
 .vscode/
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.sublime-workspace
+.project
+.classpath
 
-# Database Configuration (JANGAN PUSH CREDENTIALS!)
-config/db.php
-
-# User Uploads (Jangan push foto-foto barang dummy/testing)
-assets/images/uploads/*
-!assets/images/uploads/.gitkeep
+# ================================
+# DEPENDENCIES
+# ================================
+node_modules/
+vendor/
+composer.lock

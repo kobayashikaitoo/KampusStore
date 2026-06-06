@@ -16,6 +16,9 @@ $user = $stmt->fetch();
 
 if (!$user) { logoutUser(); header('Location: ' . BASE_URL . 'auth/login.php'); exit; }
 
+// Sync session photo dengan data DB terbaru (agar navbar langsung update)
+$_SESSION['profile_photo'] = $user['profile_photo'] ?? null;
+
 $msg = $_SESSION['profile_msg'] ?? null;
 $err = $_SESSION['profile_err'] ?? null;
 unset($_SESSION['profile_msg'], $_SESSION['profile_err']);
@@ -53,8 +56,10 @@ $wishStmt = $db->prepare('SELECT COUNT(*) FROM wishlists WHERE user_id=?');
 $wishStmt->execute([$uid]);
 $wishCount = (int)$wishStmt->fetchColumn();
 
-$initials = strtoupper(mb_substr($user['name'], 0, 1));
-$joinDate  = date('d M Y', strtotime($user['created_at']));
+$initials   = strtoupper(mb_substr($user['name'], 0, 1));
+$joinDate   = date('d M Y', strtotime($user['created_at']));
+$photoUrl   = !empty($user['profile_photo'])  ? BASE_URL . $user['profile_photo']  : null;
+$bannerUrl  = !empty($user['profile_banner']) ? BASE_URL . $user['profile_banner'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -79,13 +84,42 @@ $joinDate  = date('d M Y', strtotime($user['created_at']));
 
   <!-- Profile Header -->
   <div class="pf-header">
-    <div class="pf-banner"></div>
+    <!-- Banner -->
+    <div class="pf-banner" id="pfBanner"
+         <?php if ($bannerUrl): ?>style="background-image:url('<?= e($bannerUrl) ?>');background-size:cover;background-position:center"<?php endif; ?>
+         title="Klik untuk ganti banner">
+      <div class="pf-banner-overlay" id="bannerOverlay">
+        <i class="fas fa-image"></i>
+        <span>Ganti Banner</span>
+      </div>
+      <input type="file" id="bannerInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none"/>
+    </div>
     <div class="pf-header-body">
       <div>
-        <div class="pf-av-wrap"><div class="pf-av"><?= $initials ?></div></div>
+        <div class="pf-av-wrap" id="avatarWrap" title="Klik untuk ganti foto profil">
+          <div class="pf-av" id="pfAvatar">
+            <?php if ($photoUrl): ?>
+              <img src="<?= e($photoUrl) ?>" alt="Foto Profil" class="pf-av-img" id="avatarImg"/>
+            <?php else: ?>
+              <span id="avatarInitial"><?= $initials ?></span>
+              <img src="" alt="" class="pf-av-img" id="avatarImg" style="display:none"/>
+            <?php endif; ?>
+          </div>
+          <div class="pf-av-overlay">
+            <i class="fas fa-camera"></i>
+            <span>Ganti Foto</span>
+          </div>
+          <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none"/>
+        </div>
         <div class="pf-name"><?= e($user['name']) ?></div>
         <div class="pf-username">@<?= e($user['username']) ?></div>
+        <?php if (!empty($user['bio'])): ?>
+          <div class="pf-bio"><?= e($user['bio']) ?></div>
+        <?php endif; ?>
         <div class="pf-badges">
+          <?php if ($user['is_verified']): ?>
+            <span class="pf-badge badge-v"><i class="fas fa-check-circle"></i> Verified Student</span>
+          <?php endif; ?>
           <?php if ($user['is_trusted']): ?>
             <span class="pf-badge badge-t"><i class="fas fa-medal"></i> Trusted Seller</span>
           <?php endif; ?>
@@ -148,7 +182,14 @@ $joinDate  = date('d M Y', strtotime($user['created_at']));
         <input type="tel" id="whatsapp_number" name="whatsapp_number" class="form-input"
                value="<?= e($user['whatsapp_number'] ?? '') ?>" maxlength="20"/>
       </div>
-      <button type="submit" class="btn-save">💾 Simpan Perubahan</button>
+      <div class="form-group">
+        <label class="form-label" for="bio"><i class="fas fa-align-left"></i> Bio</label>
+        <textarea id="bio" name="bio" class="form-input" rows="3"
+                  maxlength="300" placeholder="Ceritakan sedikit tentang dirimu…"
+                  style="resize:vertical;min-height:80px;height:auto;line-height:1.6"><?= e($user['bio'] ?? '') ?></textarea>
+        <div class="mt-1 text-muted" style="font-size:12px">Maks 300 karakter.</div>
+      </div>
+      <button type="submit" class="btn-save"><i class="fas fa-save"></i> Simpan Perubahan</button>
     </form>
 
     <div class="divider"></div>
@@ -163,6 +204,130 @@ $joinDate  = date('d M Y', strtotime($user['created_at']));
 
 </div>
 
+<!-- Toast notification -->
+<div id="photoToast" class="photo-toast" role="alert" aria-live="polite"></div>
+
 <script src="<?= BASE_URL ?>assets/js/main.js" defer></script>
+<script>
+(function() {
+  const wrap       = document.getElementById('avatarWrap');
+  const input      = document.getElementById('photoInput');
+  const img        = document.getElementById('avatarImg');
+  const initial    = document.getElementById('avatarInitial');
+  const toast      = document.getElementById('photoToast');
+  const BASE_URL   = '<?= BASE_URL ?>';
+
+  function showToast(msg, type) {
+    toast.textContent = msg;
+    toast.className   = 'photo-toast ' + type + ' show';
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  wrap.addEventListener('click', () => input.click());
+
+  input.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+
+    // Client-side size guard
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('File terlalu besar. Maks 2 MB.', 'error');
+      this.value = '';
+      return;
+    }
+
+    // Instant preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      img.src = e.target.result;
+      img.style.display = 'block';
+      if (initial) initial.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+
+    // Upload
+    const fd = new FormData();
+    fd.append('photo', file);
+    wrap.classList.add('uploading');
+
+    fetch(BASE_URL + 'api/upload_photo.php', { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(data => {
+        wrap.classList.remove('uploading');
+        if (data.success) {
+          img.src = data.url;
+          showToast(data.msg, 'success');
+        } else {
+          showToast(data.error || 'Upload gagal.', 'error');
+          // Revert preview
+          img.src = '';
+          img.style.display = 'none';
+          if (initial) initial.style.display = '';
+        }
+      })
+      .catch(() => {
+        wrap.classList.remove('uploading');
+        showToast('Terjadi kesalahan. Coba lagi.', 'error');
+      });
+
+    this.value = '';
+  });
+}());
+</script>
+
+<script>
+// ── Banner Upload ──────────────────────────────────────────
+(function() {
+  const banner      = document.getElementById('pfBanner');
+  const overlay     = document.getElementById('bannerOverlay');
+  const bannerInput = document.getElementById('bannerInput');
+
+  if (!banner || !bannerInput) return;
+
+  // Click banner → open file picker
+  banner.addEventListener('click', () => bannerInput.click());
+
+  bannerInput.addEventListener('change', function() {
+    if (!this.files || !this.files[0]) return;
+    const file = this.files[0];
+
+    // Instant preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      banner.style.backgroundImage = `url('${e.target.result}')`;
+      banner.style.backgroundSize     = 'cover';
+      banner.style.backgroundPosition = 'center';
+    };
+    reader.readAsDataURL(file);
+
+    // Show loading state
+    overlay.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Mengupload…</span>';
+    overlay.style.opacity = '1';
+
+    const fd = new FormData();
+    fd.append('banner', file);
+
+    fetch('<?= BASE_URL ?>api/upload_banner.php', { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(data => {
+        overlay.innerHTML = '<i class="fas fa-image"></i><span>Ganti Banner</span>';
+        overlay.style.opacity = '';
+        if (data.ok) {
+          showToast(data.msg, 'success');
+        } else {
+          showToast(data.msg || 'Upload gagal.', 'error');
+        }
+      })
+      .catch(() => {
+        overlay.innerHTML = '<i class="fas fa-image"></i><span>Ganti Banner</span>';
+        overlay.style.opacity = '';
+        showToast('Terjadi kesalahan.', 'error');
+      });
+
+    this.value = '';
+  });
+}());
+</script>
 </body>
 </html>

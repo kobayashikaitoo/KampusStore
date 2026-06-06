@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../functions/auth.php';
 require_once __DIR__ . '/../functions/admin.php';
+require_once __DIR__ . '/../functions/helpers.php';
 require_once __DIR__ . '/../config/db.php';
 
 requireAdmin();
@@ -25,8 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $p->execute([$productId]);
             $prod = $p->fetch();
             if ($prod && $prod['image']) {
-                $file = __DIR__ . '/../' . $prod['image'];
-                if (file_exists($file)) unlink($file);
+                $images = getProductAllImages($prod['image']);
+                foreach ($images as $img) {
+                    if (str_contains($img, 'uploads/')) {
+                        $file = __DIR__ . '/../' . $img;
+                        if (file_exists($file)) @unlink($file);
+                    }
+                }
             }
             $db->prepare('DELETE FROM products WHERE id=?')->execute([$productId]);
             adminLog('DELETE_PRODUCT', 'products', $productId);
@@ -102,7 +108,7 @@ require_once __DIR__ . '/layout_header.php';
     <span class="admin-card-title"><i class="fas fa-box"></i> Produk (<?= count($products) ?>)</span>
     <form method="GET" class="table-toolbar">
       <div class="search-box">
-        <span>🔍</span>
+        <i class="fas fa-search" style="color:var(--muted)"></i>
         <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Cari judul / seller…"/>
       </div>
       <select name="status" class="filter-select" onchange="this.form.submit()">
@@ -132,7 +138,7 @@ require_once __DIR__ . '/layout_header.php';
         <td>
           <div style="display:flex;align-items:center;gap:10px">
             <?php if ($p['image']): ?>
-              <img src="/<?= htmlspecialchars($p['image']) ?>" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" alt=""/>
+              <img src="<?= BASE_URL . htmlspecialchars(getProductImage($p['image'])) ?>" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" alt=""/>
             <?php else: ?>
               <div style="width:40px;height:40px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0"><i class="fas fa-box"></i></div>
             <?php endif; ?>

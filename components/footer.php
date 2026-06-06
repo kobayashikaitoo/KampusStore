@@ -39,7 +39,7 @@
     </div>
 
     <div class="footer-bottom">
-      <span class="footer-copy">© 2026 KampusStore. Dibuat dengan <i class="fas fa-heart" style="color:#ef4444"></i> untuk mahasiswa Indonesia.</span>
+      <span class="footer-copy">© 2026 KampusStore.</span>
       <div class="footer-legal">
         <a href="<?= BASE_URL ?>terms.php">Syarat</a>
         <a href="<?= BASE_URL ?>privacy.php">Privasi</a>

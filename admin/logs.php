@@ -21,7 +21,7 @@ require_once __DIR__ . '/layout_header.php';
 
 <div class="admin-card">
   <div class="admin-card-header">
-    <span class="admin-card-title">📋 Activity Log (<?= count($logs) ?> terbaru)</span>
+    <span class="admin-card-title"><i class="fas fa-history"></i> Activity Log (<?= count($logs) ?> terbaru)</span>
   </div>
   <div style="overflow-x:auto">
   <table class="admin-table">

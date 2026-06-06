@@ -96,14 +96,7 @@
 }
 .btn-chat:hover{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
 
-/* ── Related Cards ── */
-.related-card{background:white;border:1px solid var(--hairline);border-radius:16px;overflow:hidden;text-decoration:none;transition:transform .2s,box-shadow .2s;display:block}
-.related-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
-.related-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--surface)}
-.related-body{padding:12px}
-.related-title-text{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.related-price{font-size:14px;font-weight:700;color:var(--ink)}
-.related-seller{font-size:11px;color:var(--muted);margin-top:3px}
+
 
 /* ── Responsive ── */
 @media(max-width:480px){

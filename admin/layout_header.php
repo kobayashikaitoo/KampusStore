@@ -129,19 +129,171 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
 
     /* Responsive */
     @media(max-width:768px){
-      .sidebar{display:none}
-      .admin-main{margin-left:0}
+      body.admin-page {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+      .admin-burger{
+        display:inline-flex !important;
+      }
+      .sidebar{
+        position:fixed !important;
+        top:0 !important;left:-260px !important;bottom:0 !important;
+        width:260px !important;
+        height:100vh !important;
+        z-index:1000 !important;
+        transition:left .3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display:flex !important;
+        flex-direction:column !important;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.15) !important;
+        overflow-y:auto !important;
+        overflow-x:hidden !important;
+      }
+      .sidebar.active{left:0 !important}
+      .admin-main{
+        margin-left:0;
+        width:100%;
+        max-width:100%;
+        min-width:0;
+        overflow-x: hidden;
+      }
+      .admin-topbar{
+        padding:0 16px;
+        height:60px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+      }
+      .admin-burger{
+        display:none !important;
+        align-items:center;
+        justify-content:center;
+        width:40px;
+        height:40px;
+        border-radius:10px;
+        background:var(--surface);
+        border:1.5px solid var(--hairline);
+        color:var(--ink);
+        cursor:pointer;
+        font-size:16px;
+        transition:all 0.2s;
+      }
+      .admin-burger:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+      }
+      .admin-content{padding:16px}
+      .topbar-right{display:none} /* Hide username in topbar on small screens to save space */
+      .stat-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+      .stat-card{padding:16px}
+      .stat-card-num{font-size:22px}
+      .stat-card-icon{font-size:22px;margin-bottom:8px}
+      
+      .admin-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .admin-card-title {
+        width: 100%;
+      }
+      .table-toolbar{
+        display: flex !important;
+        flex-direction:column;
+        align-items:stretch;
+        width:100%;
+        gap:8px !important;
+      }
+      .search-box{
+        max-width:none !important;
+        width:100% !important;
+        box-sizing: border-box;
+      }
+      .filter-select, .table-toolbar button, .table-toolbar a{
+        width:100% !important;
+        height:38px !important;
+        text-align:center;
+        justify-content:center;
+        display:inline-flex !important;
+        align-items:center;
+        box-sizing: border-box;
+      }
+    }
+
+    /* Sidebar Close Button */
+    .sidebar-close {
+      display: none;
+    }
+    @media(max-width:768px) {
+      .sidebar-close {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        margin-left: auto;
+        background: transparent;
+        border: none;
+        color: rgba(255,255,255,0.7);
+        font-size: 18px;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        transition: background .2s, color .2s;
+      }
+      .sidebar-close:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+      }
+    }
+
+    /* Sidebar Overlay */
+    .sidebar-overlay{
+      position:fixed;inset:0;
+      background:rgba(0,0,0,0.5);
+      opacity:0;visibility:hidden;
+      transition:opacity .3s,visibility .3s;
+      z-index:999;
+    }
+    .sidebar-overlay.active{opacity:1;visibility:visible}
+
+    /* Dashboard Grid Class */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media(max-width:768px){
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
     }
   </style>
+  <script>
+    function toggleAdminSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+      }
+    }
+  </script>
 </head>
 <body class="admin-page">
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" onclick="toggleAdminSidebar()"></div>
 
 <!-- Sidebar -->
 <aside class="sidebar">
   <a href="./" class="sidebar-logo">
-    <span style="font-size:20px">🏪</span>
+    <span style="font-size:16px;margin-right:6px;"><i class="fas fa-store"></i></span>
     <span class="sidebar-logo-text">KampusStore</span>
     <span class="sidebar-badge">Admin</span>
+    <button class="sidebar-close" onclick="toggleAdminSidebar()" aria-label="Tutup Menu">
+      <i class="fas fa-times"></i>
+    </button>
   </a>
 
   <div class="sidebar-section">Overview</div>
@@ -151,7 +303,7 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
 
   <div class="sidebar-section">Manajemen</div>
   <a href="users.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'users.php' ? 'active' : '' ?>">
-    <span>👥</span> Kelola Pengguna
+    <span><i class="fas fa-users"></i></span> Kelola Pengguna
   </a>
   <a href="products.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'products.php' ? 'active' : '' ?>">
     <span><i class="fas fa-box"></i></span> Kelola Produk
@@ -160,17 +312,27 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
     <span><i class="fas fa-flag"></i></span> Laporan
   </a>
   <a href="logs.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'logs.php' ? 'active' : '' ?>">
-    <span>📋</span> Activity Log
+    <span><i class="fas fa-history"></i></span> Activity Log
   </a>
 
   <div class="sidebar-section">Sistem</div>
   <a href="../index.php" class="sidebar-link">
-    <span>🌐</span> Lihat Situs
+    <span><i class="fas fa-globe"></i></span> Lihat Situs
   </a>
 
   <div class="sidebar-footer">
     <div class="sidebar-user">
-      <div class="sidebar-av"><?= strtoupper(substr($_SESSION['name'] ?? 'A', 0, 1)) ?></div>
+      <div class="sidebar-av" style="overflow:hidden;padding:0;">
+        <?php if (!empty($_SESSION['profile_photo'])): ?>
+          <img src="<?= BASE_URL . htmlspecialchars($_SESSION['profile_photo']) ?>"
+               alt="<?= htmlspecialchars($_SESSION['name'] ?? '') ?>"
+               style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;"><?= strtoupper(substr($_SESSION['name'] ?? 'A', 0, 1)) ?></span>
+        <?php else: ?>
+          <?= strtoupper(substr($_SESSION['name'] ?? 'A', 0, 1)) ?>
+        <?php endif; ?>
+      </div>
       <div>
         <div class="sidebar-uname"><?= htmlspecialchars($_SESSION['username'] ?? '') ?></div>
         <div class="sidebar-role"><?= ucfirst($_SESSION['role'] ?? 'admin') ?></div>
@@ -183,7 +345,10 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
 <!-- Main Content -->
 <main class="admin-main">
   <div class="admin-topbar">
-    <div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="admin-burger" id="admin-burger" onclick="toggleAdminSidebar()" aria-label="Menu Admin">
+        <i class="fas fa-bars"></i>
+      </button>
       <div class="topbar-title"><?= htmlspecialchars($pageTitle) ?></div>
     </div>
     <div class="topbar-right">

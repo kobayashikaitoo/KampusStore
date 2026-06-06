@@ -10,7 +10,7 @@ $sid = (int)($_GET['id'] ?? 0);
 if (!$sid) { header('Location: ' . BASE_URL . 'index.php'); exit; }
 
 // Get seller
-$stmt = $db->prepare('SELECT * FROM users WHERE id = ? AND is_banned = 0 AND role = "user" LIMIT 1');
+$stmt = $db->prepare('SELECT * FROM users WHERE id = ? AND is_banned = 0 LIMIT 1');
 $stmt->execute([$sid]);
 $seller = $stmt->fetch();
 
@@ -42,8 +42,10 @@ $condLabels = [
     'used'    =>['label'=>'Bekas',         'class'=>'cond-used'],
 ];
 
-$initials    = strtoupper(mb_substr($seller['name'], 0, 1));
-$joinedDate  = date('M Y', strtotime($seller['created_at']));
+$initials     = strtoupper(mb_substr($seller['name'], 0, 1));
+$joinedDate   = date('M Y', strtotime($seller['created_at']));
+$sellerPhoto  = !empty($seller['profile_photo'])  ? BASE_URL . $seller['profile_photo']  : null;
+$sellerBanner = !empty($seller['profile_banner']) ? BASE_URL . $seller['profile_banner'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -65,20 +67,36 @@ $joinedDate  = date('M Y', strtotime($seller['created_at']));
 <div class="sl-wrap">
   <!-- Profile Header -->
   <div class="sp-header">
-    <div class="sp-banner"></div>
+    <div class="sp-banner"
+         <?php if ($sellerBanner): ?>style="background-image:url('<?= e($sellerBanner) ?>');background-size:cover;background-position:center"<?php endif; ?>>
+    </div>
     <div class="sp-header-body">
       <div>
-        <div class="sp-av-wrap"><div class="sp-av"><?= $initials ?></div></div>
+        <div class="sp-av-wrap"><div class="sp-av">
+          <?php if ($sellerPhoto): ?>
+            <img src="<?= e($sellerPhoto) ?>" alt="Foto <?= e($seller['name']) ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <span style="display:none"><?= $initials ?></span>
+          <?php else: ?>
+            <?= $initials ?>
+          <?php endif; ?>
+        </div></div>
         <div class="sp-name"><?= e($seller['name']) ?></div>
         <div class="sp-username">@<?= e($seller['username']) ?>
           <?php if ($seller['campus']): ?> · <?= e($seller['campus']) ?><?php endif; ?>
           <?php if ($seller['faculty']): ?> · <?= e($seller['faculty']) ?><?php endif; ?>
         </div>
+        <?php if (!empty($seller['bio'])): ?>
+          <div style="font-size:13px;color:var(--body);line-height:1.6;margin-top:6px;max-width:480px;"><?= e($seller['bio']) ?></div>
+        <?php endif; ?>
         <div class="sp-badges">
-          <?php if ($seller['is_trusted']): ?>
-            <span class="sp-badge" style="background:#fdf4ff;color:#7c3aed">🏅 Trusted Seller</span>
+          <?php if ($seller['is_verified']): ?>
+            <span class="sp-badge" style="background:#eff6ff;color:#2563eb"><i class="fas fa-check-circle"></i> Verified Student</span>
           <?php endif; ?>
-          <span class="sp-badge" style="background:var(--surface);color:var(--body)">📅 Bergabung <?= $joinedDate ?></span>
+          <?php if ($seller['is_trusted']): ?>
+            <span class="sp-badge" style="background:#fdf4ff;color:#7c3aed"><i class="fas fa-medal"></i> Trusted Seller</span>
+          <?php endif; ?>
+          <span class="sp-badge" style="background:var(--surface);color:var(--body)"><i class="far fa-calendar-alt"></i> Bergabung <?= $joinedDate ?></span>
         </div>
       </div>
       <?php if (isLoggedIn() && $_SESSION['user_id'] !== $sid): ?>

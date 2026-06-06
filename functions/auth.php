@@ -27,13 +27,14 @@ function redirectIfLoggedIn(): void
 function loginUser(array $user): void
 {
     session_regenerate_id(true);
-    $_SESSION['user_id']     = $user['id'];
-    $_SESSION['username']    = $user['username'];
-    $_SESSION['name']        = $user['name'];
-    $_SESSION['role']        = $user['role'] ?? 'user';
-    $_SESSION['is_verified'] = $user['is_verified'];
-    $_SESSION['is_trusted']  = $user['is_trusted'];
-    $_SESSION['is_banned']   = $user['is_banned'] ?? 0;
+    $_SESSION['user_id']       = $user['id'];
+    $_SESSION['username']      = $user['username'];
+    $_SESSION['name']          = $user['name'];
+    $_SESSION['role']          = $user['role'] ?? 'user';
+    $_SESSION['is_verified']   = $user['is_verified'];
+    $_SESSION['is_trusted']    = $user['is_trusted'];
+    $_SESSION['is_banned']     = $user['is_banned'] ?? 0;
+    $_SESSION['profile_photo'] = $user['profile_photo'] ?? null;
 }
 
 function logoutUser(): void
@@ -107,12 +108,13 @@ function currentUser(): ?array
 {
     if (!isLoggedIn()) return null;
     return [
-        'id'          => $_SESSION['user_id'],
-        'username'    => $_SESSION['username'],
-        'name'        => $_SESSION['name'],
-        'role'        => $_SESSION['role'] ?? 'user',
-        'is_verified' => $_SESSION['is_verified'],
-        'is_trusted'  => $_SESSION['is_trusted'],
-        'is_banned'   => $_SESSION['is_banned'] ?? 0,
+        'id'            => $_SESSION['user_id'],
+        'username'      => $_SESSION['username'],
+        'name'          => $_SESSION['name'],
+        'role'          => $_SESSION['role'] ?? 'user',
+        'is_verified'   => $_SESSION['is_verified'],
+        'is_trusted'    => $_SESSION['is_trusted'],
+        'is_banned'     => $_SESSION['is_banned'] ?? 0,
+        'profile_photo' => $_SESSION['profile_photo'] ?? null,
     ];
 }

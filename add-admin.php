@@ -13,10 +13,16 @@ $stmt = $db->prepare('SELECT COUNT(*) as count FROM users WHERE role = "admin"')
 $stmt->execute();
 $result = $stmt->fetch();
 
-if ($result['count'] > 0 && !isset($_POST['force'])) {
-    $hasAdmin = true;
-} else {
-    $hasAdmin = false;
+$hasAdmin = ($result['count'] > 0);
+
+if ($hasAdmin) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isLoggedIn() || !isAdmin()) {
+        http_response_code(403);
+        die('403 — Akses ditolak. Akun administrator sudah dikonfigurasi. Hanya administrator yang dapat menambahkan admin baru.');
+    }
 }
 
 // Initialize variables

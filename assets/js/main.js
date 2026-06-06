@@ -2,9 +2,11 @@
 
 // Navbar scroll effect
 const nav = document.getElementById('ks-nav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 40);
-}, { passive: true });
+if (nav) {
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+}
 
 // ── Category Filter ──────────────────────────────────────────
 function filterCat(el) {

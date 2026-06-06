@@ -73,13 +73,9 @@ $condLabels = ['like_new'=>'Seperti Baru','good'=>'Kondisi Baik','fair'=>'Cukup 
           <?php if ($isSold): ?>
             <div class="sold-overlay"><span class="sold-pill"><i class="fas fa-check"></i> Terjual</span></div>
           <?php endif; ?>
-          <!-- Remove button -->
-          <form method="POST" style="display:contents">
-            <input type="hidden" name="action" value="remove"/>
-            <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>"/>
-            <button type="submit" class="wl-remove-btn" title="Hapus dari wishlist"
-              onclick="return confirm('Hapus dari wishlist?')">✕</button>
-          </form>
+          <!-- Remove button (AJAX enabled, fallbacks to POST form if JS is unavailable) -->
+          <button type="button" class="wl-remove-btn" title="Hapus dari wishlist"
+            onclick="removeWishlistItem(this, <?= (int)$p['id'] ?>)">✕</button>
         </div>
         <div class="wl-card-body">
           <div class="wl-card-cat"><?= e($p['cat_name']) ?> · <?= $cond ?></div>
@@ -102,5 +98,48 @@ $condLabels = ['like_new'=>'Seperti Baru','good'=>'Kondisi Baik','fair'=>'Cukup 
   <?php endif; ?>
 </div>
 <script src="<?= BASE_URL ?>assets/js/main.js" defer></script>
+<script>
+function removeWishlistItem(btn, productId) {
+  if (!confirm('Hapus dari wishlist?')) return;
+  btn.disabled = true;
+
+  fetch(window.BASE_URL + 'api/wishlist_toggle.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'product_id=' + encodeURIComponent(productId)
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'removed') {
+      const card = btn.closest('.wl-card');
+      if (card) {
+        card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+          card.remove();
+          // Cek apakah wishlist sekarang kosong
+          const grid = document.querySelector('.wl-grid');
+          if (grid && grid.querySelectorAll('.wl-card').length === 0) {
+            location.reload(); // Reload untuk memuat tampilan empty state yang rapi
+          } else {
+            // Update counter wishlist di header
+            const titleSpan = document.querySelector('.page-title span');
+            if (titleSpan) {
+              const count = grid.querySelectorAll('.wl-card').length;
+              titleSpan.textContent = `(${count} barang)`;
+            }
+          }
+        }, 300);
+      }
+    } else {
+      btn.disabled = false;
+    }
+  })
+  .catch(() => {
+    btn.disabled = false;
+  });
+}
+</script>
 </body>
 </html>

@@ -57,9 +57,18 @@ $navUser = currentUser();
             style="display:flex;align-items:center;gap:8px;background:var(--primary-light);border:1.5px solid rgba(37,99,235,0.2);border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;"
             aria-label="Menu akun"
           >
-            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">
-              <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
-            </div>
+            <?php if (!empty($navUser['profile_photo'])): ?>
+              <img src="<?= BASE_URL . htmlspecialchars($navUser['profile_photo']) ?>" alt="Avatar"
+                   style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:none;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">
+                <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
+              </div>
+            <?php else: ?>
+              <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;">
+                <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
+              </div>
+            <?php endif; ?>
             <span style="font-size:13px;font-weight:600;color:var(--primary)"><?= htmlspecialchars($navUser['username']) ?></span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -74,7 +83,7 @@ $navUser = currentUser();
             <a href="wishlist.php" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
               <i class="fas fa-heart"></i> Wishlist
             </a>
-            <?php if ($navUser && $navUser['role'] === 'admin'): ?>
+            <?php if ($navUser && in_array($navUser['role'], ['admin', 'moderator'])): ?>
               <div style="height:1px;background:var(--hairline);margin:4px 0"></div>
               <a href="admin/" style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:#d97706;font-size:14px;font-weight:500;transition:background .15s" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background=''">
                 <i class="fas fa-cog"></i> Panel Admin
@@ -143,8 +152,17 @@ $navUser = currentUser();
     <div class="drawer-user-section">
       <?php if ($navUser): ?>
         <div class="drawer-user-info">
-          <div class="drawer-avatar">
-            <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
+          <div class="drawer-avatar" style="overflow:hidden;padding:0;">
+            <?php if (!empty($navUser['profile_photo'])): ?>
+              <img src="<?= BASE_URL . htmlspecialchars($navUser['profile_photo']) ?>" alt="Avatar"
+                   style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                   onerror="this.style.display='none';this.parentElement.querySelector('.nav-initial').style.display='flex'"/>
+              <span class="nav-initial" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:inherit;font-weight:inherit;">
+                <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
+              </span>
+            <?php else: ?>
+              <?= strtoupper(substr($navUser['name'], 0, 1)) ?>
+            <?php endif; ?>
           </div>
           <div>
             <div class="drawer-name"><?= htmlspecialchars($navUser['name']) ?></div>
@@ -156,7 +174,7 @@ $navUser = currentUser();
           <a href="profile.php"><i class="fas fa-user-circle"></i> Profil Saya</a>
           <a href="my-listings.php"><i class="fas fa-tags"></i> Barang Saya</a>
           <a href="wishlist.php"><i class="fas fa-heart"></i> Wishlist Saya</a>
-          <?php if ($navUser['role'] === 'admin'): ?>
+          <?php if (in_array($navUser['role'], ['admin', 'moderator'])): ?>
             <a href="admin/" style="color:#d97706"><i class="fas fa-cog"></i> Panel Admin</a>
           <?php endif; ?>
           <a href="auth/logout.php" style="color:#dc2626"><i class="fas fa-sign-out-alt"></i> Keluar</a>
@@ -226,4 +244,3 @@ document.getElementById('mobile-search-input')?.addEventListener('keydown', e =>
   if (q && mobSearchInput) mobSearchInput.value = q;
 })();
 </script>
-

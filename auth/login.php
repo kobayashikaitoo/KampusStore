@@ -51,7 +51,7 @@ unset($_SESSION['auth_error'], $_SESSION['auth_success'], $_SESSION['auth_old'])
     <?php endif; ?>
 
     <!-- Form -->
-    <form method="POST" action="process_login.php" id="login-form">
+    <form method="POST" action="process_login.php<?= !empty($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : '' ?>" id="login-form">
       <input type="hidden" name="csrf" value="<?= $_SESSION['csrf_token'] ?? (
         $_SESSION['csrf_token'] = bin2hex(random_bytes(16))
       ) ?>"/>

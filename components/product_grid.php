@@ -61,6 +61,7 @@ $stmt = $db->prepare("
         u.id    AS seller_id,
         u.username AS seller_username,
         u.name  AS seller_name,
+        u.profile_photo AS seller_photo,
         u.is_verified AS seller_verified,
         u.is_trusted  AS seller_trusted
     FROM products p
@@ -177,7 +178,17 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
             <!-- Seller -->
             <div class="card-seller">
               <a href="seller.php?id=<?= (int)$p['seller_id'] ?>" style="display:flex;align-items:center;gap:6px;text-decoration:none;flex:1;min-width:0">
-                <div class="seller-av"><?= $initials ?></div>
+                <div class="seller-av" style="overflow:hidden;padding:0;">
+                  <?php if (!empty($p['seller_photo'])): ?>
+                    <img src="<?= BASE_URL . htmlspecialchars($p['seller_photo']) ?>"
+                         alt="<?= htmlspecialchars($p['seller_name']) ?>"
+                         style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                    <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;"><?= $initials ?></span>
+                  <?php else: ?>
+                    <?= $initials ?>
+                  <?php endif; ?>
+                </div>
                 <span class="seller-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($p['seller_name']) ?></span>
               </a>
             </div>
@@ -216,33 +227,27 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
 
       <!-- Pagination -->
       <?php if ($totalPages > 1): ?>
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:40px">
-        <?php
-          $base = '?cat=' . urlencode($catSlug) . '&sort=' . urlencode($sortBy) . ($searchQ ? '&q='.urlencode($searchQ) : '');
-        ?>
-        <?php if ($page > 1): ?>
-          <a href="<?= $base ?>&page=<?= $page-1 ?>" style="display:flex;align-items:center;gap:4px;padding:8px 16px;border:1.5px solid var(--hairline);border-radius:10px;text-decoration:none;font-size:14px;font-weight:500;color:var(--ink);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--hairline)'">← Prev</a>
-        <?php endif; ?>
-
-        <?php for ($pg = max(1, $page-2); $pg <= min($totalPages, $page+2); $pg++): ?>
-          <a href="<?= $base ?>&page=<?= $pg ?>" style="
-            display:flex;align-items:center;justify-content:center;
-            width:38px;height:38px;border-radius:10px;
-            border:1.5px solid <?= $pg===$page ? 'var(--primary)' : 'var(--hairline)' ?>;
-            background:<?= $pg===$page ? 'var(--primary)' : 'white' ?>;
-            color:<?= $pg===$page ? 'white' : 'var(--ink)' ?>;
-            font-size:14px;font-weight:600;text-decoration:none;
-            transition:all .2s;
-          "><?= $pg ?></a>
-        <?php endfor; ?>
-
-        <?php if ($page < $totalPages): ?>
-          <a href="<?= $base ?>&page=<?= $page+1 ?>" style="display:flex;align-items:center;gap:4px;padding:8px 16px;border:1.5px solid var(--hairline);border-radius:10px;text-decoration:none;font-size:14px;font-weight:500;color:var(--ink);transition:all .2s" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--hairline)'">Next →</a>
-        <?php endif; ?>
+      <div class="pg-wrap">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:40px">
+          <?php if ($page > 1): ?>
+            <button class="pg-btn" data-page="<?= $page-1 ?>"
+                    style="display:flex;align-items:center;gap:4px;padding:8px 16px;border:1.5px solid var(--hairline);border-radius:10px;background:white;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .2s">← Prev</button>
+          <?php endif; ?>
+          <?php for ($pg = max(1, $page-2); $pg <= min($totalPages, $page+2); $pg++): ?>
+            <button class="pg-btn <?= $pg===$page ? 'pg-active' : '' ?>" data-page="<?= $pg ?>"
+                    style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1.5px solid <?= $pg===$page ? 'var(--primary)' : 'var(--hairline)' ?>;background:<?= $pg===$page ? 'var(--primary)' : 'white' ?>;color:<?= $pg===$page ? 'white' : 'var(--ink)' ?>;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s">
+              <?= $pg ?>
+            </button>
+          <?php endfor; ?>
+          <?php if ($page < $totalPages): ?>
+            <button class="pg-btn" data-page="<?= $page+1 ?>"
+                    style="display:flex;align-items:center;gap:4px;padding:8px 16px;border:1.5px solid var(--hairline);border-radius:10px;background:white;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .2s">Next →</button>
+          <?php endif; ?>
+        </div>
+        <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:10px">
+          Menampilkan <?= count($products) ?> dari <?= $totalProducts ?> barang
+        </p>
       </div>
-      <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:10px">
-        Menampilkan <?= count($products) ?> dari <?= $totalProducts ?> barang
-      </p>
       <?php endif; ?>
 
     <?php endif; ?>
@@ -250,32 +255,126 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
 </section>
 
 <script>
-// Sort redirect
-function applySort(val) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('sort', val);
-  url.searchParams.delete('page');
-  window.location.href = url.toString();
+// ── State ──────────────────────────────────────────────────
+const _grid = {
+  cat:  '<?= htmlspecialchars($catSlug) ?>',
+  sort: '<?= htmlspecialchars($sortBy) ?>',
+  q:    '<?= htmlspecialchars(addslashes($searchQ)) ?>',
+  page: <?= $page ?>,
+};
+
+// ── Fetch & render products ─────────────────────────────────
+function loadProducts(params = {}, pushState = true) {
+  Object.assign(_grid, params);
+
+  const qs = new URLSearchParams({
+    cat:  _grid.cat,
+    sort: _grid.sort,
+    q:    _grid.q,
+    page: _grid.page,
+  }).toString();
+
+  // Update browser URL without reload
+  if (pushState) {
+    history.pushState(_grid, '', '?' + qs);
+  }
+
+  // Show skeleton
+  const section = document.getElementById('products');
+  const gridWrap = section.querySelector('.ks-container');
+  gridWrap.style.opacity = '0.4';
+  gridWrap.style.transition = 'opacity .2s';
+
+  fetch('<?= BASE_URL ?>api/products.php?' + qs)
+    .then(r => r.json())
+    .then(data => {
+      // Update title
+      const titleEl = section.querySelector('.section-title');
+      if (titleEl) titleEl.innerHTML = data.title;
+
+      // Update reset button visibility
+      const resetBtn = section.querySelector('.view-all');
+      if (resetBtn) {
+        resetBtn.style.display = (_grid.cat === 'semua' && !_grid.q) ? 'none' : '';
+      }
+
+      // Replace grid content
+      const existingGrid = section.querySelector('#product-grid');
+      const emptyState   = section.querySelector('[style*="padding:80px"]');
+      const target = existingGrid || emptyState;
+
+      const tmp = document.createElement('div');
+      tmp.innerHTML = data.html;
+      const newContent = tmp.firstElementChild;
+
+      if (target) {
+        target.replaceWith(newContent);
+      } else {
+        gridWrap.querySelector('.ks-container') ? gridWrap.querySelector('.ks-container').appendChild(newContent) : gridWrap.appendChild(newContent);
+      }
+
+      // Replace pagination
+      let pgWrap = section.querySelector('.pg-wrap');
+      if (!pgWrap) {
+        pgWrap = document.createElement('div');
+        pgWrap.className = 'pg-wrap';
+        gridWrap.appendChild(pgWrap);
+      }
+      pgWrap.innerHTML = data.pagination;
+
+      // Bind pagination buttons
+      section.querySelectorAll('.pg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          loadProducts({ page: parseInt(btn.dataset.page) });
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      // Update active category tab
+      document.querySelectorAll('.cat-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.cat === _grid.cat);
+      });
+
+      gridWrap.style.opacity = '1';
+    })
+    .catch(() => { gridWrap.style.opacity = '1'; });
 }
 
-// Category tabs → server-side filter
+// ── Category tabs ───────────────────────────────────────────
 document.querySelectorAll('.cat-tab').forEach(tab => {
   tab.addEventListener('click', function() {
-    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-    this.classList.add('active');
-    const url = new URL(window.location.href);
-    url.searchParams.set('cat', this.dataset.cat);
-    url.searchParams.delete('page');
-    window.location.href = url.toString();
+    if (this.dataset.cat === _grid.cat) return;
+    loadProducts({ cat: this.dataset.cat, page: 1 });
   });
 });
 
-// Mark active tab based on current URL
-(function() {
-  const params = new URLSearchParams(window.location.search);
-  const cat = params.get('cat') || 'semua';
-  document.querySelectorAll('.cat-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.cat === cat);
+// ── Reset filter button ──────────────────────────────────────
+document.querySelector('.view-all')?.addEventListener('click', function(e) {
+  e.preventDefault();
+  const searchInput = document.getElementById('nav-search-input');
+  if (searchInput) searchInput.value = '';
+  loadProducts({ cat: 'semua', q: '', page: 1 });
+});
+
+// ── Sort select ─────────────────────────────────────────────
+function applySort(val) {
+  loadProducts({ sort: val, page: 1 });
+}
+
+// ── Pagination (initial server-rendered links → handled by pg-wrap after first fetch) ──
+document.querySelectorAll('.pg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    loadProducts({ page: parseInt(btn.dataset.page) });
+    document.getElementById('products').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-})();
+});
+
+// ── Browser back/forward ────────────────────────────────────
+window.addEventListener('popstate', (e) => {
+  if (e.state) {
+    Object.assign(_grid, e.state);
+    document.getElementById('sort-select').value = _grid.sort;
+    loadProducts({}, false);
+  }
+});
 </script>

@@ -24,13 +24,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ' . BASE_URL . 'admin/users.php'); exit;
     }
 
-    // Cegah mod ubah sesama admin (hanya super admin)
     $target = $db->prepare('SELECT * FROM users WHERE id = ?');
     $target->execute([$targetId]);
     $targetUser = $target->fetch();
 
+    if (!$targetUser) {
+        $_SESSION['admin_err'] = 'Pengguna tidak ditemukan.';
+        header('Location: ' . BASE_URL . 'admin/users.php'); exit;
+    }
+
+    // 1. Moderator tidak diperbolehkan memodifikasi akun Admin
     if ($targetUser['role'] === 'admin' && !isSuperAdmin()) {
-        $_SESSION['admin_err'] = 'Hanya super admin yang bisa memodifikasi akun admin lain.';
+        $_SESSION['admin_err'] = 'Moderator tidak diperbolehkan memodifikasi akun Admin.';
+        header('Location: ' . BASE_URL . 'admin/users.php'); exit;
+    }
+
+    // 2. Moderator tidak diperbolehkan memodifikasi sesama Moderator
+    if ($targetUser['role'] === 'moderator' && !isSuperAdmin()) {
+        $_SESSION['admin_err'] = 'Moderator tidak diperbolehkan memodifikasi sesama Moderator.';
         header('Location: ' . BASE_URL . 'admin/users.php'); exit;
     }
 
@@ -122,10 +133,10 @@ require_once __DIR__ . '/layout_header.php';
 
 <div class="admin-card">
   <div class="admin-card-header">
-    <span class="admin-card-title">👥 Pengguna (<?= count($users) ?>)</span>
+    <span class="admin-card-title"><i class="fas fa-users"></i> Pengguna (<?= count($users) ?>)</span>
     <form method="GET" class="table-toolbar">
       <div class="search-box">
-        <span>🔍</span>
+        <i class="fas fa-search" style="color:var(--muted)"></i>
         <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Cari username / nama…"/>
       </div>
       <select name="role" class="filter-select" onchange="this.form.submit()">
@@ -156,12 +167,30 @@ require_once __DIR__ . '/layout_header.php';
       <tr>
         <td>
           <div class="user-row">
-            <div class="user-av" style="<?= $u['is_banned'] ? 'opacity:.4' : '' ?>"><?= strtoupper(substr($u['name'],0,1)) ?></div>
+            <div class="user-av" style="<?= $u['is_banned'] ? 'opacity:.4' : '' ?>;overflow:hidden;padding:0;">
+              <?php if (!empty($u['profile_photo'])): ?>
+                <img src="<?= BASE_URL . htmlspecialchars($u['profile_photo']) ?>"
+                     alt="<?= htmlspecialchars($u['name']) ?>"
+                     style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">
+                  <?= strtoupper(substr($u['name'],0,1)) ?>
+                </span>
+              <?php else: ?>
+                <?= strtoupper(substr($u['name'],0,1)) ?>
+              <?php endif; ?>
+            </div>
             <div>
               <div class="user-row-name" style="<?= $u['is_banned'] ? 'text-decoration:line-through;color:var(--muted)' : '' ?>">
                 <?= htmlspecialchars($u['name']) ?>
               </div>
               <div class="user-row-sub">@<?= htmlspecialchars($u['username']) ?></div>
+              <?php if ($u['is_verified']): ?>
+                <div style="font-size:11px;color:#2563eb;font-weight:600;margin-top:2px"><i class="fas fa-check-circle"></i> Verified Student</div>
+              <?php endif; ?>
+              <?php if ($u['is_trusted']): ?>
+                <div style="font-size:11px;color:#7c3aed;font-weight:600;margin-top:2px"><i class="fas fa-medal"></i> Trusted Seller</div>
+              <?php endif; ?>
               <?php if ($u['ban_reason']): ?>
                 <div style="font-size:11px;color:var(--danger);margin-top:2px">Alasan: <?= htmlspecialchars($u['ban_reason']) ?></div>
               <?php endif; ?>
@@ -187,51 +216,59 @@ require_once __DIR__ . '/layout_header.php';
         <td>
           <?php if ($u['id'] !== (int)$_SESSION['user_id']): ?>
             <div style="display:flex;gap:5px;flex-wrap:wrap">
-              <!-- Ban/Unban -->
-              <?php if (!$u['is_banned']): ?>
-                <button class="btn-action btn-ban" onclick="banUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>')"><i class="fas fa-ban"></i> Ban</button>
+              <?php 
+              // Cek hak akses: Super Admin bisa kelola siapa saja. Moderator hanya bisa kelola User biasa.
+              $canManage = isSuperAdmin() || ($u['role'] === 'user');
+              ?>
+              <?php if ($canManage): ?>
+                <!-- Ban/Unban -->
+                <?php if (!$u['is_banned']): ?>
+                  <button class="btn-action btn-ban" onclick="banUser(<?= $u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>')"><i class="fas fa-ban"></i> Ban</button>
+                <?php else: ?>
+                  <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="unban"/>
+                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
+                    <button type="submit" class="btn-action btn-unban"><i class="fas fa-check"></i> Unban</button>
+                  </form>
+                <?php endif; ?>
+                <!-- Verify -->
+                <?php if (!$u['is_verified']): ?>
+                  <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="verify"/>
+                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
+                    <button type="submit" class="btn-action btn-verify"><i class="fas fa-check"></i> Verify</button>
+                  </form>
+                <?php else: ?>
+                  <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="unverify"/>
+                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
+                    <button type="submit" class="btn-action btn-view">Unverify</button>
+                  </form>
+                <?php endif; ?>
+                <!-- Role (super admin only) -->
+                <?php if (isSuperAdmin() && $u['role'] === 'user'): ?>
+                  <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="make_moderator"/>
+                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
+                    <button type="submit" class="btn-action btn-verify"><i class="fas fa-shield"></i> Mod</button>
+                  </form>
+                <?php elseif (isSuperAdmin() && $u['role'] === 'moderator'): ?>
+                  <form method="POST" style="display:inline">
+                    <input type="hidden" name="action" value="make_user"/>
+                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
+                    <button type="submit" class="btn-action btn-view">Revoke Mod</button>
+                  </form>
+                <?php endif; ?>
+                <!-- Delete (super admin only) -->
+                <?php if (isSuperAdmin()): ?>
+                  <form method="POST" style="display:inline" onsubmit="return confirm('Hapus permanen akun @<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>? Aksi ini tidak bisa dibatalkan.')">
+                    <input type="hidden" name="action" value="delete"/>
+                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
+                    <button type="submit" class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
+                  </form>
+                <?php endif; ?>
               <?php else: ?>
-                <form method="POST" style="display:inline">
-                  <input type="hidden" name="action" value="unban"/>
-                  <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-unban"><i class="fas fa-check"></i> Unban</button>
-                </form>
-              <?php endif; ?>
-              <!-- Verify -->
-              <?php if (!$u['is_verified']): ?>
-                <form method="POST" style="display:inline">
-                  <input type="hidden" name="action" value="verify"/>
-                  <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-verify"><i class="fas fa-check"></i> Verify</button>
-                </form>
-              <?php else: ?>
-                <form method="POST" style="display:inline">
-                  <input type="hidden" name="action" value="unverify"/>
-                  <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-view">Unverify</button>
-                </form>
-              <?php endif; ?>
-              <!-- Role (super admin only) -->
-              <?php if (isSuperAdmin() && $u['role'] === 'user'): ?>
-                <form method="POST" style="display:inline">
-                  <input type="hidden" name="action" value="make_moderator"/>
-                  <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-verify"><i class="fas fa-shield"></i> Mod</button>
-                </form>
-              <?php elseif (isSuperAdmin() && $u['role'] === 'moderator'): ?>
-                <form method="POST" style="display:inline">
-                  <input type="hidden" name="action" value="make_user"/>
-                  <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-view">Revoke Mod</button>
-                </form>
-              <?php endif; ?>
-              <!-- Delete (super admin only) -->
-              <?php if (isSuperAdmin()): ?>
-                <form method="POST" style="display:inline" onsubmit="return confirm('Hapus permanen akun @<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>? Aksi ini tidak bisa dibatalkan.')">
-                  <input type="hidden" name="action" value="delete"/>
-                  <input type="hidden" name="user_id" value="<?= $u['id'] ?>"/>
-                  <button type="submit" class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
-                </form>
+                <span style="font-size:12px;color:var(--muted);background:var(--surface);padding:4px 10px;border-radius:6px;border:1px solid var(--hairline)"><i class="fas fa-lock"></i> Terproteksi</span>
               <?php endif; ?>
             </div>
           <?php else: ?>
@@ -259,7 +296,7 @@ require_once __DIR__ . '/layout_header.php';
       <label style="font-size:13px;font-weight:600;color:var(--ink);display:block;margin-bottom:6px">Alasan Ban (opsional)</label>
       <textarea name="ban_reason" style="width:100%;border:1.5px solid var(--hairline);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;resize:none;height:80px;outline:none" placeholder="Melanggar aturan komunitas…"></textarea>
       <div style="display:flex;gap:10px;margin-top:16px">
-        <button type="submit" style="flex:1;height:44px;background:var(--danger);color:white;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">🚫 Ban</button>
+        <button type="submit" style="flex:1;height:44px;background:var(--danger);color:white;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer"><i class="fas fa-ban"></i> Ban</button>
         <button type="button" onclick="closeBanModal()" style="flex:1;height:44px;background:var(--surface);color:var(--ink);border:1.5px solid var(--hairline);border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Batal</button>
       </div>
     </form>

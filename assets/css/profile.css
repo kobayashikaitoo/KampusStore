@@ -1,11 +1,114 @@
 /* ── Profile Header ── */
 .pf-header{background:white;border:1px solid var(--hairline);border-radius:24px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.05);margin-bottom:20px}
-.pf-banner{height:110px;background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%)}
+
+/* ── Banner (interactive) ── */
+.pf-banner{
+  height:140px;
+  background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);
+  position:relative;
+  cursor:pointer;
+  overflow:hidden;
+  transition:filter .2s;
+}
+.pf-banner:hover{filter:brightness(0.88)}
+.pf-banner-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:6px;
+  background:rgba(0,0,0,0.35);
+  color:white;
+  font-size:13px;font-weight:600;
+  opacity:0;
+  transition:opacity .25s;
+  pointer-events:none;
+}
+.pf-banner-overlay i{font-size:22px}
+.pf-banner:hover .pf-banner-overlay{opacity:1}
+
 .pf-header-body{padding:0 28px 28px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.pf-av-wrap{margin-top:-38px}
-.pf-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:white;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+
+/* ── Avatar (interactive) ── */
+.pf-av-wrap{
+  position:relative;
+  margin-top:-38px;
+  width:80px;
+  cursor:pointer;
+  border-radius:50%;
+}
+.pf-av{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:700;color:white;
+  border:4px solid white;
+  box-shadow:0 2px 12px rgba(0,0,0,0.18);
+  overflow:hidden;
+  position:relative;
+  transition:filter .2s;
+}
+.pf-av-img{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+  border-radius:50%;
+}
+/* Camera overlay on hover */
+.pf-av-overlay{
+  position:absolute;inset:4px;border-radius:50%;
+  background:rgba(0,0,0,0);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;
+  color:white;font-size:11px;font-weight:600;
+  opacity:0;
+  transition:background .22s, opacity .22s;
+  z-index:2;
+  pointer-events:none;
+}
+.pf-av-overlay i{font-size:18px}
+.pf-av-wrap:hover .pf-av-overlay{
+  background:rgba(0,0,0,0.48);
+  opacity:1;
+}
+.pf-av-wrap:hover .pf-av{filter:brightness(0.88)}
+
+/* Uploading spinner state */
+.pf-av-wrap.uploading .pf-av-overlay{
+  background:rgba(0,0,0,0.6);
+  opacity:1;
+}
+.pf-av-wrap.uploading .pf-av-overlay i{display:none}
+.pf-av-wrap.uploading .pf-av-overlay::after{
+  content:'';
+  display:block;
+  width:22px;height:22px;
+  border:3px solid rgba(255,255,255,0.35);
+  border-top-color:white;
+  border-radius:50%;
+  animation:pf-spin .7s linear infinite;
+}
+.pf-av-wrap.uploading .pf-av-overlay span{display:none}
+@keyframes pf-spin{to{transform:rotate(360deg)}}
+
+/* Upload hint ring */
+.pf-av-wrap::after{
+  content:'';
+  position:absolute;inset:-3px;
+  border-radius:50%;
+  border:2px dashed transparent;
+  transition:border-color .2s;
+}
+.pf-av-wrap:hover::after{border-color:#7c3aed}
+
 .pf-name{font-size:20px;font-weight:800;color:var(--ink);margin-top:10px;letter-spacing:-0.3px}
-.pf-username{font-size:14px;color:var(--muted);margin-bottom:10px}
+.pf-username{font-size:14px;color:var(--muted);margin-bottom:4px}
+.pf-bio{
+  font-size:13px;color:var(--body);line-height:1.65;
+  margin-bottom:10px;
+  max-width:480px;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
 
 /* ── Profile Badges ── */
 .pf-badges{display:flex;gap:8px;flex-wrap:wrap}
@@ -34,3 +137,21 @@
 .btn-logout:hover{background:#fee2e2}
 .btn-outline-lnk{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:1.5px solid var(--hairline);border-radius:12px;font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;transition:all .2s}
 .btn-outline-lnk:hover{border-color:var(--primary);color:var(--primary)}
+
+/* ── Toast Notification ── */
+.photo-toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#1e1e2e;color:white;
+  padding:12px 22px;border-radius:14px;
+  font-size:14px;font-weight:500;
+  box-shadow:0 8px 32px rgba(0,0,0,0.22);
+  opacity:0;
+  transition:opacity .28s, transform .28s;
+  z-index:9999;
+  pointer-events:none;
+  white-space:nowrap;
+}
+.photo-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.photo-toast.success{background:linear-gradient(135deg,#059669,#047857)}
+.photo-toast.error{background:linear-gradient(135deg,#dc2626,#b91c1c)}

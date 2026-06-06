@@ -11,7 +11,7 @@ $stats     = getDashboardStats();
 $db        = getDB();
 
 // Recent users
-$recentUsers = $db->query('SELECT id, username, name, role, is_banned, created_at FROM users ORDER BY created_at DESC LIMIT 5')->fetchAll();
+$recentUsers = $db->query('SELECT id, username, name, role, is_banned, created_at, profile_photo FROM users ORDER BY created_at DESC LIMIT 5')->fetchAll();
 
 // Recent products
 $recentProducts = $db->query('
@@ -70,7 +70,7 @@ require_once __DIR__ . '/layout_header.php';
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div class="dashboard-grid">
 
   <!-- Recent Users -->
   <div class="admin-card">
@@ -85,7 +85,17 @@ require_once __DIR__ . '/layout_header.php';
         <tr>
           <td>
             <div class="user-row">
-              <div class="user-av"><?= strtoupper(substr($u['name'],0,1)) ?></div>
+              <div class="user-av" style="overflow:hidden;padding:0;">
+                <?php if (!empty($u['profile_photo'])): ?>
+                  <img src="<?= BASE_URL . htmlspecialchars($u['profile_photo']) ?>"
+                       alt="<?= htmlspecialchars($u['name']) ?>"
+                       style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                  <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;"><?= strtoupper(substr($u['name'],0,1)) ?></span>
+                <?php else: ?>
+                  <?= strtoupper(substr($u['name'],0,1)) ?>
+                <?php endif; ?>
+              </div>
               <div>
                 <div class="user-row-name"><?= htmlspecialchars($u['name']) ?></div>
                 <div class="user-row-sub">@<?= htmlspecialchars($u['username']) ?></div>

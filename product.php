@@ -16,6 +16,7 @@ $stmt = $db->prepare('
            u.name AS seller_name, u.campus AS seller_campus,
            u.is_verified AS seller_verified, u.is_trusted AS seller_trusted,
            u.whatsapp_number AS seller_whatsapp,
+           u.profile_photo AS seller_photo,
            u.created_at AS seller_joined
     FROM products p
     JOIN categories c ON p.category_id = c.id
@@ -49,7 +50,7 @@ $relStmt = $db->prepare('
            u.name AS seller_name, u.is_verified AS seller_verified
     FROM products p JOIN users u ON p.seller_id = u.id
     WHERE p.category_id = ? AND p.id != ? AND p.status = "active"
-    ORDER BY RAND() LIMIT 4
+    ORDER BY RAND() LIMIT 8
 ');
 $relStmt->execute([$product['category_id'], $id]);
 $related = $relStmt->fetchAll();
@@ -154,25 +155,6 @@ $pageTitle = e($product['title']) . ' — KampusStore';
         <?php endif; ?>
       </div>
 
-      <?php if (!empty($related)): ?>
-      <div class="related-section">
-        <div class="related-title">🔗 Barang Serupa</div>
-        <div class="related-grid">
-          <?php foreach ($related as $r): ?>
-            <a href="product.php?id=<?= (int)$r['id'] ?>" class="related-card">
-              <img src="<?= $r['image'] ? BASE_URL.e($r['image']) : BASE_URL.'assets/images/placeholder.png' ?>"
-                   alt="<?= e($r['title']) ?>" class="related-img"
-                   onerror="this.src='<?= BASE_URL ?>assets/images/placeholder.png'" loading="lazy"/>
-              <div class="related-body">
-                <div class="related-title-text"><?= e($r['title']) ?></div>
-                <div class="related-price"><?= formatRupiah($r['price']) ?></div>
-                <div class="related-seller">@<?= e($r['seller_name']) ?></div>
-              </div>
-            </a>
-          <?php endforeach; ?>
-        </div>
-      </div>
-      <?php endif; ?>
     </div>
 
     <!-- Right: Info + Seller -->
@@ -210,7 +192,7 @@ $pageTitle = e($product['title']) . ' — KampusStore';
           </div>
           <?php endif; ?>
           <div class="pd-meta-item">
-            <label>📅 Diposting</label>
+            <label><i class="far fa-calendar-alt"></i> Diposting</label>
             <span><?= date('d M Y', strtotime($product['created_at'])) ?></span>
           </div>
           <div class="pd-meta-item">
@@ -225,7 +207,7 @@ $pageTitle = e($product['title']) . ' — KampusStore';
 
         <?php if ($product['description']): ?>
           <div class="pd-divider"></div>
-          <div class="pd-desc-title">📝 Deskripsi Barang</div>
+          <div class="pd-desc-title"><i class="fas fa-file-alt"></i> Deskripsi Barang</div>
           <div class="pd-desc"><?= e($product['description']) ?></div>
         <?php endif; ?>
 
@@ -265,7 +247,18 @@ $pageTitle = e($product['title']) . ' — KampusStore';
       <div class="seller-card">
         <div class="seller-card-head">
           <a href="seller.php?id=<?= (int)$product['seller_id'] ?>" style="display:flex;align-items:center;gap:14px;text-decoration:none;flex:1">
-            <div class="seller-avatar"><?= strtoupper(mb_substr($product['seller_name'], 0, 1)) ?></div>
+            <div class="seller-avatar">
+              <?php if (!empty($product['seller_photo'])): ?>
+                <img src="<?= BASE_URL . htmlspecialchars($product['seller_photo']) ?>" alt="Foto <?= e($product['seller_name']) ?>"
+                     style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+                <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:inherit;font-weight:inherit;">
+                  <?= strtoupper(mb_substr($product['seller_name'], 0, 1)) ?>
+                </span>
+              <?php else: ?>
+                <?= strtoupper(mb_substr($product['seller_name'], 0, 1)) ?>
+              <?php endif; ?>
+            </div>
             <div>
               <div class="seller-info-name"><?= e($product['seller_name']) ?></div>
               <div class="seller-info-sub">@<?= e($product['seller_username']) ?>
@@ -290,6 +283,26 @@ $pageTitle = e($product['title']) . ' — KampusStore';
       </div>
     </div>
   </div>
+
+  <?php if (!empty($related)): ?>
+  <div class="related-section" style="margin-top: 40px; border-top: 1px solid var(--hairline); padding-top: 40px;">
+    <div class="related-title">🔗 Barang Serupa</div>
+    <div class="related-grid">
+      <?php foreach ($related as $r): ?>
+        <a href="product.php?id=<?= (int)$r['id'] ?>" class="related-card">
+          <img src="<?= $r['image'] ? BASE_URL.htmlspecialchars(getProductImage($r['image'])) : BASE_URL.'assets/images/placeholder.png' ?>"
+               alt="<?= e($r['title']) ?>" class="related-img"
+               onerror="this.src='<?= BASE_URL ?>assets/images/placeholder.png'" loading="lazy"/>
+          <div class="related-body">
+            <div class="related-title-text"><?= e($r['title']) ?></div>
+            <div class="related-price"><?= formatRupiah($r['price']) ?></div>
+            <div class="related-seller">@<?= e($r['seller_name']) ?></div>
+          </div>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+  <?php endif; ?>
 </div>
 
 <script src="<?= BASE_URL ?>assets/js/main.js" defer></script>

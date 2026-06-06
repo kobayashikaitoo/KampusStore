@@ -41,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $productId = $type === 'product' ? $targetId : null;
         $userId = $type === 'user' ? $targetId : null;
         
-        $stmt = $db->prepare('INSERT INTO reports (reporter_id, product_id, user_id, reason, status) VALUES (?, ?, ?, ?, "open")');
-        $stmt->execute([$uid, $productId, $userId, $reason]);
+        $stmt = $db->prepare('INSERT INTO reports (reporter_id, product_id, user_id, reason, description) VALUES (?, ?, ?, ?, ?)');
+        $stmt->execute([$uid, $productId, $userId, $reason, '']);
         $success = true;
     }
 }

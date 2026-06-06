@@ -21,8 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$ownProd) { $_SESSION['listing_err'] = 'Produk tidak ditemukan.'; header('Location: ' . BASE_URL . 'my-listings.php'); exit; }
     switch ($action) {
         case 'delete':
-            if ($ownProd['image'] && str_contains($ownProd['image'], 'uploads/')) {
-                $f = __DIR__ . '/' . $ownProd['image']; if (file_exists($f)) unlink($f);
+            if ($ownProd['image']) {
+                $images = getProductAllImages($ownProd['image']);
+                foreach ($images as $img) {
+                    if (str_contains($img, 'uploads/')) {
+                        $f = __DIR__ . '/' . $img;
+                        if (file_exists($f)) @unlink($f);
+                    }
+                }
             }
             $db->prepare('DELETE FROM products WHERE id = ?')->execute([$pid]);
             $_SESSION['listing_msg'] = 'Barang dihapus.'; break;
