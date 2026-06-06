@@ -5,9 +5,9 @@
 
 define('DB_HOST',    'localhost');
 define('DB_PORT',    '3306');
-define('DB_NAME',    'kampusstore');
-define('DB_USER',    'kampusstore');
-define('DB_PASS',    'ks_dev_2026');
+define('DB_NAME',    'your_database_name');
+define('DB_USER',    'your_database_user');
+define('DB_PASS',    'your_database_password');
 define('DB_CHARSET', 'utf8mb4');
 
 /**
