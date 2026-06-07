@@ -59,7 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         for ($i = 0; $i < $filesCount; $i++) {
             if ($_FILES['image']['error'][$i] !== UPLOAD_ERR_OK) continue;
-            $ftype = mime_content_type($_FILES['image']['tmp_name'][$i]);
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $ftype = $finfo->file($_FILES['image']['tmp_name'][$i]);
             if (!in_array($ftype, $allowed)) {
                 $_SESSION['sell_error'] = 'Format gambar harus JPG, PNG, atau WebP.';
                 $_SESSION['sell_old']   = $old;

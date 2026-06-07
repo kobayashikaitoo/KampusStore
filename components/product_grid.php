@@ -20,6 +20,7 @@ $offset     = ($page - 1) * $perPage;
 // ── Build WHERE ────────────────────────────────────────────────
 $where  = ["p.status = 'active'"];
 $params = [];
+$currentCatName = null;
 
 if ($catSlug && $catSlug !== 'semua') {
     $where[]  = 'c.slug = ?';
@@ -58,6 +59,7 @@ $stmt = $db->prepare("
         p.id, p.title, p.price, p.is_nego, p.`condition`,
         p.image, p.created_at, p.views, p.location,
         c.slug  AS cat_slug,
+        c.name  AS cat_name,
         u.id    AS seller_id,
         u.username AS seller_username,
         u.name  AS seller_name,
@@ -73,6 +75,11 @@ $stmt = $db->prepare("
 ");
 $stmt->execute($params);
 $products = $stmt->fetchAll();
+
+// ── Fetch current category name for display ────────────────────
+if ($catSlug && $catSlug !== 'semua' && !empty($products)) {
+    $currentCatName = $products[0]['cat_name'] ?? null;
+}
 
 // ── Wishlist status for current user ──────────────────────────
 $wishlistSet = [];
@@ -103,7 +110,7 @@ $animDelays = ['d1','d2','d3','d4','d5','d6','d7','d8'];
           🔍 Hasil untuk "<?= htmlspecialchars($searchQ) ?>"
           <span style="font-size:14px;font-weight:400;color:var(--muted);margin-left:8px">(<?= $totalProducts ?> barang)</span>
         <?php elseif ($catSlug && $catSlug !== 'semua'): ?>
-          Kategori: <?= htmlspecialchars(ucfirst($catSlug)) ?>
+          Kategori: <?= htmlspecialchars($currentCatName ?? ucfirst($catSlug)) ?>
         <?php else: ?>
           Barang Terbaru <i class="fas fa-fire" style="color:#ef4444"></i>
         <?php endif; ?>

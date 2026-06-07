@@ -61,6 +61,7 @@ $stmt = $db->prepare("
         p.id, p.title, p.price, p.is_nego, p.`condition`,
         p.image, p.created_at, p.views, p.location,
         c.slug  AS cat_slug,
+        c.name  AS cat_name,
         u.id    AS seller_id,
         u.name  AS seller_name,
         u.username AS seller_username,
