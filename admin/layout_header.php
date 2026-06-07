@@ -127,14 +127,16 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
     .alert-success{background:var(--success-light);color:#15803d;border:1px solid #bbf7d0}
     .alert-error{background:var(--danger-light);color:var(--danger);border:1px solid #fecaca}
 
+    /* Hamburger Button (hidden by default on desktop) */
+    .admin-burger {
+      display: none;
+    }
+
     /* Responsive */
     @media(max-width:768px){
       body.admin-page {
         max-width: 100vw;
         overflow-x: hidden;
-      }
-      .admin-burger{
-        display:inline-flex !important;
       }
       .sidebar{
         position:fixed !important;
@@ -150,22 +152,8 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
         overflow-x:hidden !important;
       }
       .sidebar.active{left:0 !important}
-      .admin-main{
-        margin-left:0;
-        width:100%;
-        max-width:100%;
-        min-width:0;
-        overflow-x: hidden;
-      }
-      .admin-topbar{
-        padding:0 16px;
-        height:60px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-      }
       .admin-burger{
-        display:none !important;
+        display:inline-flex !important;
         align-items:center;
         justify-content:center;
         width:40px;
@@ -181,6 +169,20 @@ if (!isset($pageTitle)) $pageTitle = 'Admin';
       .admin-burger:hover {
         background: var(--primary-light);
         color: var(--primary);
+      }
+      .admin-main{
+        margin-left:0;
+        width:100%;
+        max-width:100%;
+        min-width:0;
+        overflow-x: hidden;
+      }
+      .admin-topbar{
+        padding:0 16px;
+        height:60px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
       }
       .admin-content{padding:16px}
       .topbar-right{display:none} /* Hide username in topbar on small screens to save space */
